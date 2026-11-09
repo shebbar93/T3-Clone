@@ -4,12 +4,12 @@ This repo is a fork of [pingdotgg/t3code](https://github.com/pingdotgg/t3code).
 
 Branch `local/pr-28191` is upstream `main` plus these local changes:
 
-| Change                                                                            | Why                                                                                                                              |
-| --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Fix from [pingdotgg/t3code#28191](https://github.com/pingdotgg/t3code/pull/28191) | Clicked workspace areas no longer show the focus ring after a stray key.                                                         |
-| Composer font ligatures (`apps/web/src/index.css`)                                | ProseMirror turns ligatures off. This turns them on in the prompt box.                                                           |
-| Thread details hidden by default (`rightPanelStore.ts`)                           | Local preference.                                                                                                                |
-| Electron `45.2.3` (`apps/desktop/package.json`)                                   | Electron 44 (Chromium 152) draws a typed `->` as `>` after the next space. Electron 45 (Chromium 156) draws the arrow correctly. |
+| Change                                                                                       | Why                                                                                                                              |
+| -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Fix from [pingdotgg/t3code#28191](https://github.com/pingdotgg/t3code/pull/28191)            | Clicked workspace areas no longer show the focus ring after a stray key.                                                         |
+| Composer font ligatures (`apps/web/src/index.css`)                                           | ProseMirror turns ligatures off. This turns them on in the prompt box.                                                           |
+| Thread details hidden by default (`rightPanelStore.ts`)                                      | Local preference.                                                                                                                |
+| Electron `45.2.3` (`apps/desktop/package.json`), `node-abi` `4.40.0` (`pnpm-workspace.yaml`) | Electron 44 (Chromium 152) draws a typed `->` as `>` after the next space. Electron 45 (Chromium 156) draws the arrow correctly. |
 
 | Remote     | URL                                              |
 | ---------- | ------------------------------------------------ |
@@ -34,7 +34,7 @@ Quit `T3 Code (Nightly)` before you open it. Both apps use the bundle id `com.t3
    git merge upstream/main
    ```
 2. If there is a conflict, fix the files, then `git add <file>` and `git commit`.
-   If `apps/desktop/package.json` conflicts on `electron`, keep the higher version. Do not go below `45.2.3`.
+   If `apps/desktop/package.json` conflicts on `electron`, keep the higher version. Do not go below `45.2.3`. Keep `node-abi` new enough to know that Electron version, or the build fails with `Could not detect abi`.
 3. Install dependencies: `vp i`
 4. Optional check:
    ```sh
