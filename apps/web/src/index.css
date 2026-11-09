@@ -1723,6 +1723,12 @@ body {
   font-variant-ligatures: none;
 }
 
+.composer-tiptap.ProseMirror {
+  -webkit-font-variant-ligatures: normal;
+  font-variant-ligatures: normal;
+  font-feature-settings: normal;
+}
+
 /* Lighter default icon stroke. In the base layer so stroke-* utilities still win; any
    CSS beats lucide's stroke-width="2" attribute. */
 @layer base {
