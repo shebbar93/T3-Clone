@@ -2,9 +2,14 @@
 
 This repo is a fork of [pingdotgg/t3code](https://github.com/pingdotgg/t3code).
 
-Branch `local/pr-28191` is upstream `main` plus the fix from
-[pingdotgg/t3code#28191](https://github.com/pingdotgg/t3code/pull/28191)
-(clicked workspace areas no longer show the focus ring after a stray key).
+Branch `local/pr-28191` is upstream `main` plus these local changes:
+
+| Change                                                                            | Why                                                                                                                              |
+| --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Fix from [pingdotgg/t3code#28191](https://github.com/pingdotgg/t3code/pull/28191) | Clicked workspace areas no longer show the focus ring after a stray key.                                                         |
+| Composer font ligatures (`apps/web/src/index.css`)                                | ProseMirror turns ligatures off. This turns them on in the prompt box.                                                           |
+| Thread details hidden by default (`rightPanelStore.ts`)                           | Local preference.                                                                                                                |
+| Electron `45.2.3` (`apps/desktop/package.json`)                                   | Electron 44 (Chromium 152) draws a typed `->` as `>` after the next space. Electron 45 (Chromium 156) draws the arrow correctly. |
 
 | Remote     | URL                                              |
 | ---------- | ------------------------------------------------ |
@@ -29,6 +34,7 @@ Quit `T3 Code (Nightly)` before you open it. Both apps use the bundle id `com.t3
    git merge upstream/main
    ```
 2. If there is a conflict, fix the files, then `git add <file>` and `git commit`.
+   If `apps/desktop/package.json` conflicts on `electron`, keep the higher version. Do not go below `45.2.3`.
 3. Install dependencies: `vp i`
 4. Optional check:
    ```sh
@@ -42,6 +48,8 @@ Quit `T3 Code (Nightly)` before you open it. Both apps use the bundle id `com.t3
 ## Build and install the app
 
 The DMG target fails on this machine (`hdiutil: couldn't unmount ... Resource busy`). Use the zip target.
+
+The build uses the working tree, so uncommitted files go into the app. Run `git status` first.
 
 1. Build:
    ```sh
@@ -66,5 +74,5 @@ Check the PR state:
 gh pr view 28191 -R pingdotgg/t3code --json state
 ```
 
-If it is `MERGED`, the fix is in upstream `main`. You do not need this branch.
-Build from `upstream/main` with the same steps.
+If it is `MERGED`, the focus fix is in upstream `main`. Keep this branch for the other local changes in the table at the top.
+If upstream also has the ligature fix and Electron 45 or later, build from `upstream/main` with the same steps.
