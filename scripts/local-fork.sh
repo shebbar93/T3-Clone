@@ -147,7 +147,7 @@ cmd_check() {
 cmd_push() {
   need_clean_tree
   need_branch
-  git fetch origin upstream
+  git fetch --multiple origin upstream
   git merge-base --is-ancestor origin/main upstream/main || die "origin/main is not an ancestor of upstream/main. Do not add commits to origin/main"
   git merge-base --is-ancestor upstream/main HEAD || die "$BRANCH does not contain upstream/main. Run: $0 sync"
   step "push $BRANCH"
@@ -193,7 +193,7 @@ cmd_build() {
   step "install ${zips[0]} to $APP"
   local tmp
   tmp="$(mktemp -d)"
-  trap 'rm -rf "$tmp"' EXIT
+  trap "rm -rf '$tmp'" EXIT
   ditto -x -k "${zips[0]}" "$tmp"
   [ -d "$tmp/T3 Code (Beta).app" ] || die "zip has no \"T3 Code (Beta).app\""
   rm -rf "$APP"
