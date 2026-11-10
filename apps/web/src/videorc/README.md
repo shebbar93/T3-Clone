@@ -3,6 +3,7 @@
 A skin for `apps/web`, on by default, that applies the light-skeuomorphic look of
 [Videorc UI](https://ui.videorc.com): chrome primary buttons, switches, and checkboxes,
 glass chips, keycaps, and floating panels with drop shadows.
+It also turns on font ligatures and a block caret in the prompt box.
 
 It is plain CSS that matches the `data-slot` attributes of `components/ui`. No component is changed.
 

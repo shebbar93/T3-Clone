@@ -19,6 +19,22 @@
   --vrc-float-rim: oklch(0 0 0 / 10%);
   --vrc-float-drop: 0 12px 36px oklch(0 0 0 / 14%), 0 1px 3px oklch(0 0 0 / 8%);
   --vrc-dialog-drop: 0 16px 48px oklch(0 0 0 / 20%), 0 1px 10px oklch(0 0 0 / 14%);
+  --vrc-chromatic-face: oklch(1 0 0) 0%, oklch(0.985 0 0) 60%, oklch(0.95 0 0) 100%;
+  --vrc-chromatic-bands:
+    oklch(0.27 0 0) 0deg, oklch(0.63 0 0) 34deg, oklch(0.92 0 0) 46deg, oklch(0.74 0 0) 54deg,
+    oklch(0.45 0 0) 74deg, oklch(0.14 0 0) 96deg, oklch(0.27 0 0) 120deg;
+  --vrc-chromatic-glints:
+    transparent 0deg, oklch(1 0 0 / 65%) 8deg, transparent 18deg, transparent 50deg,
+    oklch(0 0 0 / 40%) 62deg, transparent 74deg, transparent 90deg;
+  --vrc-chromatic-sheen:
+    oklch(1 0 0 / 35%) 0%, transparent 30%, transparent 70%, oklch(0 0 0 / 35%) 100%;
+  --vrc-chromatic-recess: oklch(0 0 0 / 28%);
+  --vrc-chromatic-rim: oklch(0 0 0 / 18%);
+  --vrc-chromatic-lift: oklch(0 0 0 / 3%);
+  --vrc-plate-top: oklch(0 0 0 / 9%);
+  --vrc-plate-bottom: oklch(0 0 0 / 3%);
+  --vrc-plate-hi: oklch(1 0 0 / 90%);
+  --vrc-plate-rim: oklch(0 0 0 / 7%);
 }
 
 .dark {
@@ -42,6 +58,32 @@
   --vrc-float-rim: oklch(1 0 0 / 10%);
   --vrc-float-drop: 0 14px 44px oklch(0 0 0 / 50%), 0 1px 3px oklch(0 0 0 / 30%);
   --vrc-dialog-drop: var(--vrc-float-drop);
+  --vrc-chromatic-face: oklch(0.22 0 0) 0%, oklch(0.16 0 0) 60%, oklch(0.13 0 0) 100%;
+  --vrc-chromatic-bands:
+    oklch(0.3 0 0) 0deg, oklch(0.7 0 0) 34deg, oklch(1 0 0) 46deg, oklch(0.82 0 0) 54deg,
+    oklch(0.5 0 0) 74deg, oklch(0.16 0 0) 96deg, oklch(0.3 0 0) 120deg;
+  --vrc-chromatic-recess: oklch(0 0 0 / 90%);
+  --vrc-chromatic-rim: oklch(0 0 0 / 70%);
+  --vrc-chromatic-lift: oklch(1 0 0 / 6%);
+  --vrc-plate-top: oklch(1 0 0 / 14%);
+  --vrc-plate-bottom: oklch(1 0 0 / 4%);
+  --vrc-plate-hi: oklch(1 0 0 / 16%);
+  --vrc-plate-rim: oklch(1 0 0 / 5%);
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --vrc-chip-rim: oklch(0 0 0 / 24%);
+    --vrc-keycap-rim: oklch(0 0 0 / 28%);
+    --vrc-float-rim: oklch(0 0 0 / 24%);
+    --vrc-plate-rim: oklch(0 0 0 / 28%);
+  }
+  .dark {
+    --vrc-chip-rim: oklch(1 0 0 / 30%);
+    --vrc-keycap-rim: oklch(1 0 0 / 30%);
+    --vrc-float-rim: oklch(1 0 0 / 30%);
+    --vrc-plate-rim: oklch(1 0 0 / 30%);
+  }
 }
 
 [data-slot="button"].bg-primary,
@@ -57,16 +99,14 @@
 [data-slot="button"]:is(.bg-primary, .bg-destructive),
 [data-slot="switch"][data-checked],
 [data-slot="checkbox-indicator"][data-checked] {
-  border-color: transparent;
-  background-color: var(--vrc-tone);
-  background-image: linear-gradient(
-    to bottom,
-    color-mix(in oklch, var(--vrc-tone), white 28%) 0%,
-    var(--vrc-tone) 40%,
+  --vrc-chrome-stops:
+    color-mix(in oklch, var(--vrc-tone), white 28%) 0%, var(--vrc-tone) 40%,
     color-mix(in oklch, var(--vrc-tone), black 30%) 54%,
     color-mix(in oklch, var(--vrc-tone), black 10%) 82%,
-    color-mix(in oklch, var(--vrc-tone), white 22%) 100%
-  );
+    color-mix(in oklch, var(--vrc-tone), white 22%) 100%;
+  border-color: transparent;
+  background-color: var(--vrc-tone);
+  background-image: linear-gradient(to bottom, var(--vrc-chrome-stops));
   background-origin: border-box;
   box-shadow:
     var(--tw-ring-offset-shadow),
@@ -79,25 +119,11 @@
 [data-slot="button"]:is(.bg-primary, .bg-destructive):hover:not(:disabled) {
   background-image:
     linear-gradient(var(--vrc-chrome-lift), var(--vrc-chrome-lift)),
-    linear-gradient(
-      to bottom,
-      color-mix(in oklch, var(--vrc-tone), white 28%) 0%,
-      var(--vrc-tone) 40%,
-      color-mix(in oklch, var(--vrc-tone), black 30%) 54%,
-      color-mix(in oklch, var(--vrc-tone), black 10%) 82%,
-      color-mix(in oklch, var(--vrc-tone), white 22%) 100%
-    );
+    linear-gradient(to bottom, var(--vrc-chrome-stops));
 }
 
 [data-slot="button"]:is(.bg-primary, .bg-destructive):is(:active, [data-pressed]):not(:disabled) {
-  background-image: linear-gradient(
-    to top,
-    color-mix(in oklch, var(--vrc-tone), white 28%) 0%,
-    var(--vrc-tone) 40%,
-    color-mix(in oklch, var(--vrc-tone), black 30%) 54%,
-    color-mix(in oklch, var(--vrc-tone), black 10%) 82%,
-    color-mix(in oklch, var(--vrc-tone), white 22%) 100%
-  );
+  background-image: linear-gradient(to top, var(--vrc-chrome-stops));
   box-shadow:
     var(--tw-ring-offset-shadow),
     var(--tw-ring-shadow),
@@ -157,44 +183,6 @@
 ) {
   border-color: var(--vrc-float-rim);
   box-shadow: var(--vrc-dialog-drop);
-}
-
-@media (prefers-contrast: more) {
-  :root {
-    --vrc-chip-rim: oklch(0 0 0 / 24%);
-    --vrc-keycap-rim: oklch(0 0 0 / 28%);
-    --vrc-float-rim: oklch(0 0 0 / 24%);
-  }
-  .dark {
-    --vrc-chip-rim: oklch(1 0 0 / 30%);
-    --vrc-keycap-rim: oklch(1 0 0 / 30%);
-    --vrc-float-rim: oklch(1 0 0 / 30%);
-  }
-}
-
-:root {
-  --vrc-chromatic-face: oklch(1 0 0) 0%, oklch(0.985 0 0) 60%, oklch(0.95 0 0) 100%;
-  --vrc-chromatic-bands:
-    oklch(0.27 0 0) 0deg, oklch(0.63 0 0) 34deg, oklch(0.92 0 0) 46deg, oklch(0.74 0 0) 54deg,
-    oklch(0.45 0 0) 74deg, oklch(0.14 0 0) 96deg, oklch(0.27 0 0) 120deg;
-  --vrc-chromatic-glints:
-    transparent 0deg, oklch(1 0 0 / 65%) 8deg, transparent 18deg, transparent 50deg,
-    oklch(0 0 0 / 40%) 62deg, transparent 74deg, transparent 90deg;
-  --vrc-chromatic-sheen:
-    oklch(1 0 0 / 35%) 0%, transparent 30%, transparent 70%, oklch(0 0 0 / 35%) 100%;
-  --vrc-chromatic-recess: oklch(0 0 0 / 28%);
-  --vrc-chromatic-rim: oklch(0 0 0 / 18%);
-  --vrc-chromatic-lift: oklch(0 0 0 / 3%);
-}
-
-.dark {
-  --vrc-chromatic-face: oklch(0.22 0 0) 0%, oklch(0.16 0 0) 60%, oklch(0.13 0 0) 100%;
-  --vrc-chromatic-bands:
-    oklch(0.3 0 0) 0deg, oklch(0.7 0 0) 34deg, oklch(1 0 0) 46deg, oklch(0.82 0 0) 54deg,
-    oklch(0.5 0 0) 74deg, oklch(0.16 0 0) 96deg, oklch(0.3 0 0) 120deg;
-  --vrc-chromatic-recess: oklch(0 0 0 / 90%);
-  --vrc-chromatic-rim: oklch(0 0 0 / 70%);
-  --vrc-chromatic-lift: oklch(1 0 0 / 6%);
 }
 
 button.isolate.overflow-hidden.rounded-full:enabled {
@@ -295,27 +283,13 @@ button.isolate.overflow-hidden.rounded-full:enabled {
   box-shadow: none;
 }
 
-:root {
-  --vrc-plate-top: oklch(0 0 0 / 9%);
-  --vrc-plate-bottom: oklch(0 0 0 / 3%);
-  --vrc-plate-hi: oklch(1 0 0 / 90%);
-  --vrc-plate-rim: oklch(0 0 0 / 7%);
+.composer-tiptap {
+  caret-shape: block;
 }
 
-.dark {
-  --vrc-plate-top: oklch(1 0 0 / 14%);
-  --vrc-plate-bottom: oklch(1 0 0 / 4%);
-  --vrc-plate-hi: oklch(1 0 0 / 16%);
-  --vrc-plate-rim: oklch(1 0 0 / 5%);
-}
-
-@media (prefers-contrast: more) {
-  :root {
-    --vrc-plate-rim: oklch(0 0 0 / 28%);
-  }
-  .dark {
-    --vrc-plate-rim: oklch(1 0 0 / 30%);
-  }
+.composer-tiptap.ProseMirror {
+  font-variant-ligatures: normal;
+  font-feature-settings: normal;
 }
 
 .bg-sidebar-row-active,

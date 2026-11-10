@@ -689,7 +689,7 @@ describe("rightPanelStore", () => {
     });
   });
 
-  it("persists only opened inline details and never an open popover", () => {
+  it("persists inline preference without restoring an open popover", () => {
     expect(
       migratePersistedRightPanelState({
         threadPanelVisibilityByThreadKey: {
@@ -700,7 +700,7 @@ describe("rightPanelStore", () => {
     ).toEqual({
       byThreadKey: {},
       threadPanelVisibilityByThreadKey: {
-        "env-1:thread-B": { inlineOpen: true, popoverOpen: false },
+        "env-1:thread-A": { inlineOpen: false, popoverOpen: false },
       },
     });
   });
