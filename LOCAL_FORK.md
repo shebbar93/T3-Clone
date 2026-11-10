@@ -45,7 +45,12 @@ Quit `T3 Code (Nightly)` before you open it. Both apps use the bundle id `com.t3
    vp test run src/lib/workspaceFocus.browser.test.ts src/components/ChatView.logic.browser.test.ts
    cd ../..
    ```
-5. Push: `git push`
+5. Push the branch, then move `origin/main` to `upstream/main`:
+   ```sh
+   git push
+   git push origin upstream/main:main
+   ```
+   The second push keeps upstream changes out of [PR #1](https://github.com/shebbar93/T3-Clone/pull/1), so the PR shows only local changes. It must be a fast-forward. Do not add commits to `origin/main`.
 
 ## Build and install the app
 
