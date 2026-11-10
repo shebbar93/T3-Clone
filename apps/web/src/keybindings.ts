@@ -280,6 +280,14 @@ export function threadTraversalDirectionFromCommand(
   return null;
 }
 
+export type ThreadStatusJump = "working" | "done";
+
+export function threadStatusJumpFromCommand(command: string | null): ThreadStatusJump | null {
+  if (command === "thread.nextWorking") return "working";
+  if (command === "thread.nextDone") return "done";
+  return null;
+}
+
 export function shouldShowThreadJumpHintsForModifiers(
   modifiers: ShortcutModifierStateLike,
   keybindings: ResolvedKeybindingsConfig,

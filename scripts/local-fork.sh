@@ -138,7 +138,8 @@ cmd_check() {
   (
     cd apps/web
     vp run typecheck
-    vp test run src/lib/workspaceFocus.browser.test.ts src/components/ChatView.logic.browser.test.ts
+    vp test run src/lib/workspaceFocus.browser.test.ts src/components/ChatView.logic.browser.test.ts \
+      src/components/ChatView.composerFocus.browser.test.tsx src/components/sidebarStatusJump.test.ts
   )
   ok "check"
 }
@@ -277,6 +278,12 @@ cmd_upstream_status() {
     echo "REMOVE: composer ligature change (upstream turns ligatures on in .composer-tiptap.ProseMirror)"
   else
     echo "KEEP:   composer ligature change"
+  fi
+
+  if git show upstream/main:apps/web/src/index.css | grep -q 'caret-shape'; then
+    echo "REMOVE: composer caret change (upstream sets caret-shape). Check that it is on .composer-tiptap"
+  else
+    echo "KEEP:   composer caret change"
   fi
 
   state="$(gh pr view "$QUIT_FIX_PR" --repo pingdotgg/t3code --json state -q .state)"

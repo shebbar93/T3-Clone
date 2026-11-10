@@ -95,8 +95,10 @@ import {
   shouldShowThreadJumpHintsForModifiers,
   threadJumpCommandForIndex,
   threadJumpIndexFromCommand,
+  threadStatusJumpFromCommand,
   threadTraversalDirectionFromCommand,
 } from "../keybindings";
+import { resolveNextThreadWithStatus } from "./sidebarStatusJump";
 import { useShortcutModifierState } from "../shortcutModifierState";
 import { isTerminalFocused } from "../lib/terminalFocus";
 import { isPreviewFocused } from "../lib/previewFocus";
@@ -2926,6 +2928,23 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
         );
         return;
       }
+      const statusJump = threadStatusJumpFromCommand(command);
+      if (statusJump !== null) {
+        const target = resolveNextThreadWithStatus({
+          threads: searchableThreads,
+          keyOf: threadShellKey,
+          orderedThreadKeys,
+          excludedThreadKeys: snoozedThreadKeys,
+          currentThreadKey: routeRowThreadKey,
+          status: statusJump,
+          localLastVisitedAtById: useUiStateStore.getState().threadLastVisitedAtById,
+        });
+        if (!target) return;
+        event.preventDefault();
+        event.stopPropagation();
+        navigateToThread(scopeThreadRef(target.environmentId, target.id));
+        return;
+      }
       const jumpIndex = threadJumpIndexFromCommand(command ?? "");
       if (jumpIndex === null) return;
       navigateToThreadKey(orderedThreadKeys[jumpIndex] ?? null);
@@ -2939,6 +2958,8 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
     routePreviewOpen,
     routeRowThreadKey,
     routeTerminalOpen,
+    searchableThreads,
+    snoozedThreadKeys,
     threadByKey,
   ]);
 

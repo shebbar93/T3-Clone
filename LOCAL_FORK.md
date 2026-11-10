@@ -4,13 +4,16 @@ This repo is a fork of [pingdotgg/t3code](https://github.com/pingdotgg/t3code).
 
 Branch `local/pr-28191` is upstream `main` plus these local changes:
 
-| Change                                                                                                                                      | Why                                                                                                                              |
-| ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Composer font ligatures (`apps/web/src/index.css`)                                                                                          | ProseMirror turns ligatures off. This turns them on in the prompt box.                                                           |
-| Thread details hidden by default (`rightPanelStore.ts`)                                                                                     | Local preference.                                                                                                                |
-| Electron `45.2.3` (`apps/desktop/package.json`), `node-abi` `4.40.0` (`pnpm-workspace.yaml`)                                                | Electron 44 (Chromium 152) draws a typed `->` as `>` after the next space. Electron 45 (Chromium 156) draws the arrow correctly. |
-| Videorc look (`apps/web/src/videorc/`, one import in `apps/web/src/main.tsx`)                                                               | Light skeuomorphic style from [Videorc UI](https://ui.videorc.com). CSS only. See [Videorc look](#videorc-look).                 |
-| Quit error fix (`apps/desktop/src/window/DesktopWindow.ts`), from open upstream PR [#33620](https://github.com/pingdotgg/t3code/pull/33620) | Quit with Cmd+Q showed `TypeError: Object has been destroyed`. Remove when #33620 is in upstream `main`.                         |
+| Change                                                                                                                                                                 | Why                                                                                                                                                                                                           |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Composer font ligatures (`apps/web/src/index.css`)                                                                                                                     | ProseMirror turns ligatures off. This turns them on in the prompt box.                                                                                                                                        |
+| Composer block caret (`apps/web/src/index.css`, `caret-shape: block` on `.composer-tiptap`)                                                                            | Local preference. CSS only, prompt box only. Needs Chromium 144 or later (Electron 45 has Chromium 156).                                                                                                      |
+| Thread details hidden by default (`rightPanelStore.ts`)                                                                                                                | Local preference.                                                                                                                                                                                             |
+| Electron `45.2.3` (`apps/desktop/package.json`), `node-abi` `4.40.0` (`pnpm-workspace.yaml`)                                                                           | Electron 44 (Chromium 152) draws a typed `->` as `>` after the next space. Electron 45 (Chromium 156) draws the arrow correctly.                                                                              |
+| Videorc look (`apps/web/src/videorc/`, one import in `apps/web/src/main.tsx`)                                                                                          | Light skeuomorphic style from [Videorc UI](https://ui.videorc.com). CSS only. See [Videorc look](#videorc-look).                                                                                              |
+| Quit error fix (`apps/desktop/src/window/DesktopWindow.ts`), from open upstream PR [#33620](https://github.com/pingdotgg/t3code/pull/33620)                            | Quit with Cmd+Q showed `TypeError: Object has been destroyed`. Remove when #33620 is in upstream `main`.                                                                                                      |
+| Composer focus (`ChatView.tsx`, `KeybindingsSettings.logic.ts`, `composer.focus` in `packages/contracts/src/keybindings.ts`)                                           | The `composer.focus` command puts focus in the prompt box. It has no default key. Bind Ctrl+L in Settings > Keybindings. Cmd+W also puts focus in the prompt box when it closes the last right panel surface. |
+| Thread status jump (`sidebarStatusJump.ts`, `Sidebar.tsx`, `apps/web/src/keybindings.ts`, `packages/shared/src/keybindings.ts`, `BrowserDocumentFrame.tsx`, contracts) | `mod+alt+arrowdown` goes to the next working thread. `mod+alt+arrowup` goes to the next completed thread.                                                                                                     |
 
 | Remote     | URL                                              |
 | ---------- | ------------------------------------------------ |
@@ -96,7 +99,8 @@ These are the steps that the script does. Use them when the script fails, or to 
    ```sh
    cd apps/web
    vp run typecheck
-   vp test run src/lib/workspaceFocus.browser.test.ts src/components/ChatView.logic.browser.test.ts
+   vp test run src/lib/workspaceFocus.browser.test.ts src/components/ChatView.logic.browser.test.ts \
+     src/components/ChatView.composerFocus.browser.test.tsx src/components/sidebarStatusJump.test.ts
    cd ../..
    ```
 5. Push the branch, then move `origin/main` to `upstream/main`:
@@ -155,10 +159,12 @@ To check the other fixes:
 ```sh
 git show upstream/main:apps/desktop/package.json | grep '"electron"'
 git show upstream/main:apps/web/src/index.css | grep -n 'font-variant-ligatures'
+git show upstream/main:apps/web/src/index.css | grep -n 'caret-shape'
 gh pr view 33620 --repo pingdotgg/t3code --json state -q .state
 ```
 
 If upstream has Electron 45 or later, remove the local Electron and `node-abi` change.
 If upstream turns ligatures on in `.composer-tiptap.ProseMirror`, remove the local ligature change.
+If upstream sets `caret-shape` on `.composer-tiptap`, remove the local caret change.
 If #33620 is `MERGED`, take upstream's `DesktopWindow.ts` and `DesktopWindow.test.ts` when you merge.
 If no local fix is left, build from `upstream/main` with the same steps.
