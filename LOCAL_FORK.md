@@ -4,12 +4,13 @@ This repo is a fork of [pingdotgg/t3code](https://github.com/pingdotgg/t3code).
 
 Branch `local/pr-28191` is upstream `main` plus these local changes:
 
-| Change                                                                                       | Why                                                                                                                              |
-| -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Composer font ligatures (`apps/web/src/index.css`)                                           | ProseMirror turns ligatures off. This turns them on in the prompt box.                                                           |
-| Thread details hidden by default (`rightPanelStore.ts`)                                      | Local preference.                                                                                                                |
-| Electron `45.2.3` (`apps/desktop/package.json`), `node-abi` `4.40.0` (`pnpm-workspace.yaml`) | Electron 44 (Chromium 152) draws a typed `->` as `>` after the next space. Electron 45 (Chromium 156) draws the arrow correctly. |
-| Videorc look (`apps/web/src/videorc/`, one import in `apps/web/src/main.tsx`)                | Light skeuomorphic style from [Videorc UI](https://ui.videorc.com). CSS only. See [Videorc look](#videorc-look).                 |
+| Change                                                                                                                                      | Why                                                                                                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Composer font ligatures (`apps/web/src/index.css`)                                                                                          | ProseMirror turns ligatures off. This turns them on in the prompt box.                                                           |
+| Thread details hidden by default (`rightPanelStore.ts`)                                                                                     | Local preference.                                                                                                                |
+| Electron `45.2.3` (`apps/desktop/package.json`), `node-abi` `4.40.0` (`pnpm-workspace.yaml`)                                                | Electron 44 (Chromium 152) draws a typed `->` as `>` after the next space. Electron 45 (Chromium 156) draws the arrow correctly. |
+| Videorc look (`apps/web/src/videorc/`, one import in `apps/web/src/main.tsx`)                                                               | Light skeuomorphic style from [Videorc UI](https://ui.videorc.com). CSS only. See [Videorc look](#videorc-look).                 |
+| Quit error fix (`apps/desktop/src/window/DesktopWindow.ts`), from open upstream PR [#33620](https://github.com/pingdotgg/t3code/pull/33620) | Quit with Cmd+Q showed `TypeError: Object has been destroyed`. Remove when #33620 is in upstream `main`.                         |
 
 | Remote     | URL                                              |
 | ---------- | ------------------------------------------------ |
@@ -23,6 +24,7 @@ Quit `T3 Code (Nightly)` before you open it. Both apps use the bundle id `com.t3
 ## Prerequisites
 
 - Vite+ (`vp`). Install: `curl -fsSL https://vite.plus | bash`, then open a new terminal.
+- Code-signing certificate `T3 Local Signing` in the login keychain. Create it once in Keychain Access: menu bar **Keychain Access > Certificate Assistant > Create a Certificate…**, Identity Type **Self Signed Root**, Certificate Type **Code Signing**. The install step signs with it, so the app keeps the same identity after each rebuild and macOS does not ask again for the "t3code Safe Storage" keychain item. `security find-identity -p codesigning` shows it as `CSSMERR_TP_NOT_TRUSTED`. This is correct, and `codesign` still uses it.
 
 ## Get upstream updates
 
@@ -79,7 +81,7 @@ If the cwd is `apps/desktop` in this repo, stop it with `kill <pid>`.
    ditto -x -k release/T3-Code-*-arm64.zip /tmp/t3zip
    rm -rf "$HOME/Applications/T3 Code (Beta).app"
    ditto "/tmp/t3zip/T3 Code (Beta).app" "$HOME/Applications/T3 Code (Beta).app"
-   codesign --force --deep -s - "$HOME/Applications/T3 Code (Beta).app"
+   codesign --force --deep -s "T3 Local Signing" "$HOME/Applications/T3 Code (Beta).app"
    rm -rf /tmp/t3zip
    ```
 3. Check the installed app:
@@ -87,7 +89,7 @@ If the cwd is `apps/desktop` in this repo, stop it with `kill <pid>`.
    APP="$HOME/Applications/T3 Code (Beta).app"
    /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Contents/Info.plist"
    /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP/Contents/Frameworks/Electron Framework.framework/Resources/Info.plist"
-   grep -c vrc-chromatic-surge "$APP/Contents/Resources/app.asar"
+   grep -c vrc-chromatic-spin "$APP/Contents/Resources/app.asar"
    ```
    The first line is the app version from `apps/desktop/package.json`. The second line must be `45.2.3` or higher. The third line must be `1` or higher, or the Videorc look is missing.
 4. Open the app and check the [Videorc look](#videorc-look) table.
@@ -120,8 +122,10 @@ To check the other fixes:
 ```sh
 git show upstream/main:apps/desktop/package.json | grep '"electron"'
 git show upstream/main:apps/web/src/index.css | grep -n 'font-variant-ligatures'
+gh pr view 33620 --repo pingdotgg/t3code --json state -q .state
 ```
 
 If upstream has Electron 45 or later, remove the local Electron and `node-abi` change.
 If upstream turns ligatures on in `.composer-tiptap.ProseMirror`, remove the local ligature change.
+If #33620 is `MERGED`, take upstream's `DesktopWindow.ts` and `DesktopWindow.test.ts` when you merge.
 If no local fix is left, build from `upstream/main` with the same steps.
