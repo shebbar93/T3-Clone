@@ -26,7 +26,59 @@ Quit `T3 Code (Nightly)` before you open it. Both apps use the bundle id `com.t3
 - Vite+ (`vp`). Install: `curl -fsSL https://vite.plus | bash`, then open a new terminal.
 - Code-signing certificate `T3 Local Signing` in the login keychain. Create it once in Keychain Access: menu bar **Keychain Access > Certificate Assistant > Create a Certificate…**, Identity Type **Self Signed Root**, Certificate Type **Code Signing**. The install step signs with it, so the app keeps the same identity after each rebuild and macOS does not ask again for the "t3code Safe Storage" keychain item. `security find-identity -p codesigning` shows it as `CSSMERR_TP_NOT_TRUSTED`. This is correct, and `codesign` still uses it.
 
-## Get upstream updates
+## Script
+
+`scripts/local-fork.sh` does the update, build, and checks. Run `scripts/local-fork.sh` with no command to see the commands. If a command fails and its error does not tell you the fix, use the [manual steps](#manual-steps) for that part.
+
+| Command                 | What it does                                                                                                                                                                                                                                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sync`                  | Merges `upstream/main`. It takes upstream's file for conflicts in `pnpm-lock.yaml`, `apps/desktop/package.json`, `pnpm-workspace.yaml`, and `apps/web/src/main.tsx`. Then it puts back the Electron and `node-abi` minimum versions and the Videorc import, runs `vp i`, commits, and runs `selectors`. |
+| `sync --continue`       | Use this after you resolve other conflicts by hand and `git add` them.                                                                                                                                                                                                                                  |
+| `check`                 | Typecheck and focused tests in `apps/web`.                                                                                                                                                                                                                                                              |
+| `push`                  | Pushes the branch, then fast-forwards `origin/main` to `upstream/main`, so [PR #1](https://github.com/shebbar93/T3-Clone/pull/1) shows only local changes. It stops if this is not a fast-forward.                                                                                                      |
+| `build [--allow-dirty]` | Stops if the tree is dirty, the dev Electron watcher runs from this repo, or the app is open. Builds the zip (the DMG target fails on this machine), installs the app to `~/Applications`, signs it, and runs `verify`.                                                                                 |
+| `verify`                | Checks the installed app: Electron `45.2.3` or higher, and the Videorc CSS is in `app.asar`.                                                                                                                                                                                                            |
+| `selectors`             | Checks that each selector in the [Videorc look](#videorc-look) table still exists in `apps/web/src`.                                                                                                                                                                                                    |
+| `upstream-status`       | Prints `KEEP` or `REMOVE` for each local change. See [When upstream has the local fixes](#when-upstream-has-the-local-fixes).                                                                                                                                                                           |
+
+Usual update:
+
+1. `scripts/local-fork.sh sync`
+2. `scripts/local-fork.sh check`
+3. `scripts/local-fork.sh push`
+4. `scripts/local-fork.sh build`
+5. Open the app and check the [Videorc look](#videorc-look) table.
+
+If `build` stops on the dev watcher, stop it with the `kill <pid>` it prints. The watcher restarts the dev Electron app each time the build writes `apps/desktop/dist-electron`. The dev app then shows "This T3 home is unavailable".
+
+## Videorc look
+
+`apps/web/src/videorc/videorc.css` restyles existing components with CSS selectors. It changes no component code, so a merge does not conflict on it. But if upstream renames a selector below, that style stops with no error. `scripts/local-fork.sh selectors` finds a selector that was removed. It cannot show that the look is correct, so after a merge also check these in the app:
+
+| Look                                   | Depends on                                                                                                |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Chrome primary and destructive buttons | `[data-slot="button"]` with `.bg-primary` or `.bg-destructive`                                            |
+| Chrome switch, checkbox, bead knob     | `[data-slot="switch"]`, `[data-slot="switch-thumb"]`, `[data-slot="checkbox-indicator"]`                  |
+| Glass chips, keycaps                   | `.bg-popover`, `.bg-secondary`, `.bg-background` on buttons, toggles, badges; `[data-slot="kbd"]`         |
+| Floating panel rims                    | `menu-popup`, `select-popup`, `popover-popup`, `tooltip-popup`, `dialog-popup` slots                      |
+| Chromatic Send button                  | Classes `isolate overflow-hidden rounded-full` in `ComposerPrimaryActions.tsx`                            |
+| Prompt rim and drop                    | `composer-shell`, `composer-host` slots; `--chat-composer-outline`                                        |
+| Banner rims                            | `[data-composer-banner-surface]`, `--chat-composer-attached-outline`                                      |
+| Chrome plate                           | `.bg-sidebar-row-active`, `[role="treeitem"][aria-selected="true"]`, `[data-slot="toggle"][data-pressed]` |
+
+To remove the look: delete `apps/web/src/videorc/` and its import in `apps/web/src/main.tsx`.
+
+## When upstream has the local fixes
+
+The focus fix from [#28191](https://github.com/pingdotgg/t3code/pull/28191) is in upstream `main` as [#33525](https://github.com/pingdotgg/t3code/pull/33525). This branch uses upstream's version.
+
+Run `scripts/local-fork.sh upstream-status`. For each `REMOVE` line, remove that local change. If #33620 is merged, take upstream's `DesktopWindow.ts` and `DesktopWindow.test.ts` when you merge. If no local fix is left, build from `upstream/main` with the same steps.
+
+## Manual steps
+
+These are the steps that the script does. Use them when the script fails, or to see what it does.
+
+### Get upstream updates
 
 1. Merge upstream:
    ```sh
@@ -54,7 +106,7 @@ Quit `T3 Code (Nightly)` before you open it. Both apps use the bundle id `com.t3
    ```
    The second push keeps upstream changes out of [PR #1](https://github.com/shebbar93/T3-Clone/pull/1), so the PR shows only local changes. It must be a fast-forward. Do not add commits to `origin/main`.
 
-## Build and install the app
+### Build and install the app
 
 The DMG target fails on this machine (`hdiutil: couldn't unmount ... Resource busy`). Use the zip target.
 
@@ -96,26 +148,7 @@ If the cwd is `apps/desktop` in this repo, stop it with `kill <pid>`.
 
 `/Applications` needs admin rights, so the app goes to `~/Applications`.
 
-## Videorc look
-
-`apps/web/src/videorc/videorc.css` restyles existing components with CSS selectors. It changes no component code, so a merge does not conflict on it. But if upstream renames a selector below, that style stops with no error. After a merge, check these in the app:
-
-| Look                                   | Depends on                                                                                                |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Chrome primary and destructive buttons | `[data-slot="button"]` with `.bg-primary` or `.bg-destructive`                                            |
-| Chrome switch, checkbox, bead knob     | `[data-slot="switch"]`, `[data-slot="switch-thumb"]`, `[data-slot="checkbox-indicator"]`                  |
-| Glass chips, keycaps                   | `.bg-popover`, `.bg-secondary`, `.bg-background` on buttons, toggles, badges; `[data-slot="kbd"]`         |
-| Floating panel rims                    | `menu-popup`, `select-popup`, `popover-popup`, `tooltip-popup`, `dialog-popup` slots                      |
-| Chromatic Send button                  | Classes `isolate overflow-hidden rounded-full` in `ComposerPrimaryActions.tsx`                            |
-| Prompt rim and drop                    | `composer-shell`, `composer-host` slots; `--chat-composer-outline`                                        |
-| Banner rims                            | `[data-composer-banner-surface]`, `--chat-composer-attached-outline`                                      |
-| Chrome plate                           | `.bg-sidebar-row-active`, `[role="treeitem"][aria-selected="true"]`, `[data-slot="toggle"][data-pressed]` |
-
-To remove the look: delete `apps/web/src/videorc/` and its import in `apps/web/src/main.tsx`.
-
-## When upstream has the local fixes
-
-The focus fix from [#28191](https://github.com/pingdotgg/t3code/pull/28191) is in upstream `main` as [#33525](https://github.com/pingdotgg/t3code/pull/33525). This branch uses upstream's version.
+### Check upstream for the local fixes
 
 To check the other fixes:
 
