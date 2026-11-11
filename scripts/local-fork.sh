@@ -9,7 +9,6 @@ MIN_ELECTRON="45.2.3"
 MIN_NODE_ABI="4.40.0"
 CERT="T3 Local Signing"
 APP="$HOME/Applications/T3 Code (Beta).app"
-QUIT_FIX_PR="33620"
 
 die() { echo "error: $*" >&2; echo "Manual steps: LOCAL_FORK.md, section \"Manual steps\"" >&2; exit 1; }
 ok() { echo "ok: $*"; }
@@ -266,7 +265,7 @@ cmd_selectors() {
 
 cmd_upstream_status() {
   git fetch upstream
-  local electron state
+  local electron
   electron="$(git show upstream/main:apps/desktop/package.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).dependencies.electron))")"
   if version_ge "$electron" "$MIN_ELECTRON"; then
     echo "REMOVE: Electron and node-abi pins (upstream has electron $electron)"
@@ -284,13 +283,6 @@ cmd_upstream_status() {
     echo "REMOVE: composer caret change (upstream sets caret-shape). Check that it is on .composer-tiptap"
   else
     echo "KEEP:   composer caret change"
-  fi
-
-  state="$(gh pr view "$QUIT_FIX_PR" --repo pingdotgg/t3code --json state -q .state)"
-  if [ "$state" = MERGED ]; then
-    echo "REMOVE: quit error fix (#$QUIT_FIX_PR is merged). Take upstream DesktopWindow.ts and DesktopWindow.test.ts"
-  else
-    echo "KEEP:   quit error fix (#$QUIT_FIX_PR is $state)"
   fi
 }
 

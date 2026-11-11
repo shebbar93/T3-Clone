@@ -4,17 +4,16 @@ This repo is a fork of [pingdotgg/t3code](https://github.com/pingdotgg/t3code).
 
 Branch `local/pr-28191` is upstream `main` plus these local changes:
 
-| Change                                                                                                                                      | Why                                                                                                                                                                                                           |
-| ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Composer font ligatures (`apps/web/src/videorc/videorc.css`)                                                                                | ProseMirror turns ligatures off. This turns them on in the prompt box.                                                                                                                                        |
-| Composer block caret (`apps/web/src/videorc/videorc.css`, `caret-shape: block` on `.composer-tiptap`)                                       | Local preference. CSS only, prompt box only. Needs Chromium 144 or later (Electron 45 has Chromium 156).                                                                                                      |
-| Thread details hidden by default (`rightPanelStore.ts`)                                                                                     | Local preference.                                                                                                                                                                                             |
-| Electron `45.2.3` (`apps/desktop/package.json`), `node-abi` `4.40.0` (`pnpm-workspace.yaml`)                                                | Electron 44 (Chromium 152) draws a typed `->` as `>` after the next space. Electron 45 (Chromium 156) draws the arrow correctly.                                                                              |
-| Videorc look (`apps/web/src/videorc/`, one import in `apps/web/src/main.tsx`)                                                               | Light skeuomorphic style from [Videorc UI](https://ui.videorc.com). CSS only. See [Videorc look](#videorc-look).                                                                                              |
-| Quit error fix (`apps/desktop/src/window/DesktopWindow.ts`), from open upstream PR [#33620](https://github.com/pingdotgg/t3code/pull/33620) | Quit with Cmd+Q showed `TypeError: Object has been destroyed`. Remove when #33620 is in upstream `main`.                                                                                                      |
-| Composer focus (`ChatView.tsx`, `KeybindingsSettings.logic.ts`, `composer.focus` in `packages/contracts/src/keybindings.ts`)                | The `composer.focus` command puts focus in the prompt box. It has no default key. Bind Ctrl+L in Settings > Keybindings. Cmd+W also puts focus in the prompt box when it closes the last right panel surface. |
-| Thread cycle (`resolveAdjacentThreadId` in `Sidebar.logic.ts`)                                                                              | `thread.previous` and `thread.next` go around from the first thread to the last, and from the last to the first.                                                                                              |
-| First working thread (`thread.firstWorking` in contracts, `packages/shared/src/keybindings.ts`, `Sidebar.tsx`)                              | `mod+shift+w` goes to the first thread in the Working section. If that thread is open, it stays open.                                                                                                         |
+| Change                                                                                                                       | Why                                                                                                                                                                                                           |
+| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Composer font ligatures (`apps/web/src/videorc/videorc.css`)                                                                 | ProseMirror turns ligatures off. This turns them on in the prompt box.                                                                                                                                        |
+| Composer block caret (`apps/web/src/videorc/videorc.css`, `caret-shape: block` on `.composer-tiptap`)                        | Local preference. CSS only, prompt box only. Needs Chromium 144 or later (Electron 45 has Chromium 156).                                                                                                      |
+| Thread details hidden by default (`rightPanelStore.ts`)                                                                      | Local preference.                                                                                                                                                                                             |
+| Electron `45.2.3` (`apps/desktop/package.json`), `node-abi` `4.40.0` (`pnpm-workspace.yaml`)                                 | Electron 44 (Chromium 152) draws a typed `->` as `>` after the next space. Electron 45 (Chromium 156) draws the arrow correctly.                                                                              |
+| Videorc look (`apps/web/src/videorc/`, one import in `apps/web/src/main.tsx`)                                                | Light skeuomorphic style from [Videorc UI](https://ui.videorc.com). CSS only. See [Videorc look](#videorc-look).                                                                                              |
+| Composer focus (`ChatView.tsx`, `KeybindingsSettings.logic.ts`, `composer.focus` in `packages/contracts/src/keybindings.ts`) | The `composer.focus` command puts focus in the prompt box. It has no default key. Bind Ctrl+L in Settings > Keybindings. Cmd+W also puts focus in the prompt box when it closes the last right panel surface. |
+| Thread cycle (`resolveAdjacentThreadId` in `Sidebar.logic.ts`)                                                               | `thread.previous` and `thread.next` go around from the first thread to the last, and from the last to the first.                                                                                              |
+| First working thread (`thread.firstWorking` in contracts, `packages/shared/src/keybindings.ts`, `Sidebar.tsx`)               | `mod+shift+w` goes to the first thread in the Working section. If that thread is open, it stays open.                                                                                                         |
 
 | Remote     | URL                                              |
 | ---------- | ------------------------------------------------ |
@@ -74,9 +73,11 @@ To remove the look: delete `apps/web/src/videorc/` and its import in `apps/web/s
 
 ## When upstream has the local fixes
 
+The quit error fix is in upstream `main` as [#33620](https://github.com/pingdotgg/t3code/pull/33620). This branch uses upstream's version.
+
 The focus fix from [#28191](https://github.com/pingdotgg/t3code/pull/28191) is in upstream `main` as [#33525](https://github.com/pingdotgg/t3code/pull/33525). This branch uses upstream's version.
 
-Run `scripts/local-fork.sh upstream-status`. For each `REMOVE` line, remove that local change. If #33620 is merged, take upstream's `DesktopWindow.ts` and `DesktopWindow.test.ts` when you merge. If no local fix is left, build from `upstream/main` with the same steps.
+Run `scripts/local-fork.sh upstream-status`. For each `REMOVE` line, remove that local change. If no local fix is left, build from `upstream/main` with the same steps.
 
 ## Manual steps
 
@@ -161,11 +162,9 @@ To check the other fixes:
 git show upstream/main:apps/desktop/package.json | grep '"electron"'
 git show upstream/main:apps/web/src/index.css | grep -n 'font-variant-ligatures'
 git show upstream/main:apps/web/src/index.css | grep -n 'caret-shape'
-gh pr view 33620 --repo pingdotgg/t3code --json state -q .state
 ```
 
 If upstream has Electron 45 or later, remove the local Electron and `node-abi` change.
 If upstream turns ligatures on in `.composer-tiptap.ProseMirror`, remove the local ligature change.
 If upstream sets `caret-shape` on `.composer-tiptap`, remove the local caret change.
-If #33620 is `MERGED`, take upstream's `DesktopWindow.ts` and `DesktopWindow.test.ts` when you merge.
 If no local fix is left, build from `upstream/main` with the same steps.
