@@ -275,12 +275,6 @@ cmd_upstream_status() {
     echo "KEEP:   Electron and node-abi pins (upstream has electron $electron)"
   fi
 
-  if git show upstream/main:apps/web/src/index.css | awk '/composer-tiptap\.ProseMirror[^{]*\{/ {inside=1} inside && /font-variant-ligatures: *normal/ {found=1} inside && /\}/ {inside=0} END {exit !found}'; then
-    echo "REMOVE: composer ligature change (upstream turns ligatures on in .composer-tiptap.ProseMirror)"
-  else
-    echo "KEEP:   composer ligature change"
-  fi
-
   if git show upstream/main:apps/web/src/index.css | grep -q 'caret-shape'; then
     echo "REMOVE: composer caret change (upstream sets caret-shape). Check that it is on .composer-tiptap"
   else

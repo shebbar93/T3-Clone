@@ -6,7 +6,6 @@ Branch `local/pr-28191` is upstream `main` plus these local changes:
 
 | Change                                                                                                                       | Why                                                                                                                                                                                                           |
 | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Composer font ligatures (`apps/web/src/videorc/videorc.css`)                                                                 | ProseMirror turns ligatures off. This turns them on in the prompt box.                                                                                                                                        |
 | Composer block caret (`apps/web/src/videorc/videorc.css`, `caret-shape: block` on `.composer-tiptap`)                        | Local preference. CSS only, prompt box only. Needs Chromium 144 or later (Electron 45 has Chromium 156).                                                                                                      |
 | Thread details hidden by default (`rightPanelStore.ts`)                                                                      | Local preference.                                                                                                                                                                                             |
 | Electron `45.2.3` (`apps/desktop/package.json`), `node-abi` `4.40.0` (`pnpm-workspace.yaml`)                                 | Electron 44 (Chromium 152) draws a typed `->` as `>` after the next space. Electron 45 (Chromium 156) draws the arrow correctly.                                                                              |
@@ -77,6 +76,8 @@ To remove the look: delete `apps/web/src/videorc/` and its import in `apps/web/s
 The quit error fix is in upstream `main` as [#33620](https://github.com/pingdotgg/t3code/pull/33620). This branch uses upstream's version.
 
 The focus fix from [#28191](https://github.com/pingdotgg/t3code/pull/28191) is in upstream `main` as [#33525](https://github.com/pingdotgg/t3code/pull/33525). This branch uses upstream's version.
+
+The composer ligature fix is in upstream `main` (`.composer-tiptap.ProseMirror` in `apps/web/src/index.css`). This branch uses upstream's version.
 
 Run `scripts/local-fork.sh upstream-status`. For each `REMOVE` line, remove that local change. If no local fix is left, build from `upstream/main` with the same steps.
 
@@ -161,11 +162,9 @@ To check the other fixes:
 
 ```sh
 git show upstream/main:apps/desktop/package.json | grep '"electron"'
-git show upstream/main:apps/web/src/index.css | grep -n 'font-variant-ligatures'
 git show upstream/main:apps/web/src/index.css | grep -n 'caret-shape'
 ```
 
 If upstream has Electron 45 or later, remove the local Electron and `node-abi` change.
-If upstream turns ligatures on in `.composer-tiptap.ProseMirror`, remove the local ligature change.
 If upstream sets `caret-shape` on `.composer-tiptap`, remove the local caret change.
 If no local fix is left, build from `upstream/main` with the same steps.

@@ -309,11 +309,6 @@ button.isolate.overflow-hidden.rounded-full:enabled {
   caret-shape: block;
 }
 
-.composer-tiptap.ProseMirror {
-  font-variant-ligatures: normal;
-  font-feature-settings: normal;
-}
-
 .bg-sidebar-row-active,
 [role="treeitem"][aria-selected="true"],
 [data-slot="toggle"][data-pressed] {
