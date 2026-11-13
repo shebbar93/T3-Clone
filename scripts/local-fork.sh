@@ -255,6 +255,8 @@ cmd_selectors() {
   selector_check "composer shell" 'data-slot="composer-shell"' || failed=1
   selector_check "composer host" 'data-slot="composer-host"' || failed=1
   selector_check "composer outline" '--chat-composer-outline' || failed=1
+  selector_check "composer main surface" 'data-chat-composer-main-surface' || failed=1
+  selector_check "composer drop surface" 'data-chat-composer-surface' || failed=1
   selector_check "banner surface" 'data-composer-banner-surface' || failed=1
   selector_check "banner outline" '--chat-composer-attached-outline' || failed=1
   selector_check "active sidebar row" 'bg-sidebar-row-active' || failed=1

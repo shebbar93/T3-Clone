@@ -69,6 +69,10 @@
   --vrc-plate-bottom: oklch(1 0 0 / 4%);
   --vrc-plate-hi: oklch(1 0 0 / 16%);
   --vrc-plate-rim: oklch(1 0 0 / 5%);
+  --vrc-raised-rim: oklch(1 0 0 / 16%);
+  --vrc-elevation-raised:
+    0 2px 4px oklch(0 0 0 / 30%), 0 1px 2px oklch(0 0 0 / 30%), 0 0 0 0.5px var(--vrc-raised-rim),
+    0 -0.5px 0 oklch(1 0 0 / 6%);
 }
 
 @media (prefers-contrast: more) {
@@ -83,6 +87,7 @@
     --vrc-keycap-rim: oklch(1 0 0 / 30%);
     --vrc-float-rim: oklch(1 0 0 / 30%);
     --vrc-plate-rim: oklch(1 0 0 / 30%);
+    --vrc-raised-rim: oklch(1 0 0 / 30%);
   }
 }
 
@@ -276,6 +281,23 @@ button.isolate.overflow-hidden.rounded-full:enabled {
 
 :root:not(.dark) [data-slot="composer-host"] {
   box-shadow: var(--vrc-float-drop);
+}
+
+[data-slot="composer-shell"]::before,
+[data-slot="composer-host"],
+[data-slot="composer-host"]::before,
+[data-chat-composer-main-surface],
+[data-chat-composer-surface] {
+  border-radius: 10px;
+}
+
+.dark [data-slot="composer-host"] {
+  box-shadow: var(--vrc-elevation-raised);
+
+  &::after {
+    border-color: transparent;
+    box-shadow: none;
+  }
 }
 
 [data-slot="composer-shell"]:has([data-composer-banner-surface="attached"])

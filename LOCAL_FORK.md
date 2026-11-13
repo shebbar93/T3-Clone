@@ -58,16 +58,17 @@ If `build` stops on the dev watcher, stop it with the `kill <pid>` it prints. Th
 
 `apps/web/src/videorc/videorc.css` restyles existing components with CSS selectors. It changes no component code, so a merge does not conflict on it. But if upstream renames a selector below, that style stops with no error. `scripts/local-fork.sh selectors` finds a selector that was removed. It cannot show that the look is correct, so after a merge also check these in the app:
 
-| Look                                   | Depends on                                                                                                |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Chrome primary and destructive buttons | `[data-slot="button"]` with `.bg-primary` or `.bg-destructive`                                            |
-| Chrome switch, checkbox, bead knob     | `[data-slot="switch"]`, `[data-slot="switch-thumb"]`, `[data-slot="checkbox-indicator"]`                  |
-| Glass chips, keycaps                   | `.bg-popover`, `.bg-secondary`, `.bg-background` on buttons, toggles, badges; `[data-slot="kbd"]`         |
-| Floating panel rims                    | `menu-popup`, `select-popup`, `popover-popup`, `tooltip-popup`, `dialog-popup` slots                      |
-| Chromatic Send button                  | Classes `isolate overflow-hidden rounded-full` in `ComposerPrimaryActions.tsx`                            |
-| Prompt rim and drop                    | `composer-shell`, `composer-host` slots; `--chat-composer-outline`                                        |
-| Banner rims                            | `[data-composer-banner-surface]`, `--chat-composer-attached-outline`                                      |
-| Chrome plate                           | `.bg-sidebar-row-active`, `[role="treeitem"][aria-selected="true"]`, `[data-slot="toggle"][data-pressed]` |
+| Look                                    | Depends on                                                                                                |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Chrome primary and destructive buttons  | `[data-slot="button"]` with `.bg-primary` or `.bg-destructive`                                            |
+| Chrome switch, checkbox, bead knob      | `[data-slot="switch"]`, `[data-slot="switch-thumb"]`, `[data-slot="checkbox-indicator"]`                  |
+| Glass chips, keycaps                    | `.bg-popover`, `.bg-secondary`, `.bg-background` on buttons, toggles, badges; `[data-slot="kbd"]`         |
+| Floating panel rims                     | `menu-popup`, `select-popup`, `popover-popup`, `tooltip-popup`, `dialog-popup` slots                      |
+| Chromatic Send button                   | Classes `isolate overflow-hidden rounded-full` in `ComposerPrimaryActions.tsx`                            |
+| Prompt rim and drop                     | `composer-shell`, `composer-host` slots; `--chat-composer-outline`                                        |
+| Prompt raised look (dark), 10px corners | `composer-host` `::after` outline; `data-chat-composer-main-surface`, `data-chat-composer-surface`        |
+| Banner rims                             | `[data-composer-banner-surface]`, `--chat-composer-attached-outline`                                      |
+| Chrome plate                            | `.bg-sidebar-row-active`, `[role="treeitem"][aria-selected="true"]`, `[data-slot="toggle"][data-pressed]` |
 
 To remove the look: delete `apps/web/src/videorc/` and its import in `apps/web/src/main.tsx`.
 
