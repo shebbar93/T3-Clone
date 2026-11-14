@@ -2747,6 +2747,14 @@ export default function ChatView(props: ChatViewProps) {
       ...terminalShortcuts,
       ...rightPanelShortcuts,
       ...threadLifecycleShortcuts,
+      "rightPanel.close": (context) => {
+        if (rightPanelShortcuts["rightPanel.close"](context) === false) return false;
+        window.requestAnimationFrame(() => {
+          const byThreadKey = useRightPanelStore.getState().byThreadKey;
+          if (!selectActiveRightPanelSurface(byThreadKey, activeThreadRef)) focusComposerStable();
+        });
+      },
+      "composer.focus": () => focusComposerStable(),
       "thread.copyReference": ({ event }) => {
         if (!event.repeat) copyActiveThreadReference();
       },
