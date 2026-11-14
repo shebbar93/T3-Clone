@@ -2751,10 +2751,10 @@ export default function ChatView(props: ChatViewProps) {
         if (rightPanelShortcuts["rightPanel.close"](context) === false) return false;
         window.requestAnimationFrame(() => {
           const byThreadKey = useRightPanelStore.getState().byThreadKey;
-          if (!selectActiveRightPanelSurface(byThreadKey, activeThreadRef)) focusComposer();
+          if (!selectActiveRightPanelSurface(byThreadKey, activeThreadRef)) focusComposerStable();
         });
       },
-      "composer.focus": () => focusComposer(),
+      "composer.focus": () => focusComposerStable(),
       "thread.copyReference": ({ event }) => {
         if (!event.repeat) copyActiveThreadReference();
       },
