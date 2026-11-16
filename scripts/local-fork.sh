@@ -66,26 +66,11 @@ pin_node_abi() {
   fi
 }
 
-pin_videorc_import() {
-  local file=apps/web/src/main.tsx
-  if [ ! -f apps/web/src/videorc/videorc.css ]; then
-    ok "videorc import not needed (Videorc look is a Custom CSS theme)"
-  elif grep -qF 'import "./videorc/videorc.css";' "$file"; then
-    ok "videorc import"
-  else
-    grep -qF 'import "./index.css";' "$file" || die "import \"./index.css\" not found in $file"
-    sed -i '' '/^import "\.\/index\.css";$/a\
-import "./videorc/videorc.css";
-' "$file"
-    ok "videorc import restored"
-  fi
-}
-
 resolve_conflicts() {
   local file unresolved=()
   while IFS= read -r file; do
     case "$file" in
-      pnpm-lock.yaml | apps/desktop/package.json | pnpm-workspace.yaml | apps/web/src/main.tsx)
+      pnpm-lock.yaml | apps/desktop/package.json | pnpm-workspace.yaml)
         git checkout --theirs -- "$file"
         ok "took upstream $file"
         ;;
@@ -116,12 +101,11 @@ cmd_sync() {
   [ "$merging" = 1 ] && resolve_conflicts
   pin_electron
   pin_node_abi
-  pin_videorc_import
 
   step "vp i"
   vp i
 
-  git add apps/desktop/package.json pnpm-workspace.yaml apps/web/src/main.tsx pnpm-lock.yaml
+  git add apps/desktop/package.json pnpm-workspace.yaml pnpm-lock.yaml
   if [ "$merging" = 1 ]; then
     [ -z "$(git diff --name-only --diff-filter=U)" ] || die "unresolved conflicts are left"
     git commit --no-edit
@@ -131,6 +115,7 @@ cmd_sync() {
 
   need_clean_tree
   cmd_selectors
+  cmd_themes
   ok "sync done. Next: $0 check, then $0 push"
 }
 
@@ -207,28 +192,21 @@ cmd_build() {
 
 cmd_verify() {
   [ -d "$APP" ] || die "$APP not found"
-  local version electron count
+  local version electron
   version="$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Contents/Info.plist")"
   electron="$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP/Contents/Frameworks/Electron Framework.framework/Resources/Info.plist")"
-  count="$(grep -a -c vrc-chromatic-spin "$APP/Contents/Resources/app.asar" || true)"
 
   ok "app version $version"
   version_ge "$electron" "$MIN_ELECTRON" || die "Electron $electron is below $MIN_ELECTRON"
   ok "Electron $electron"
-  if [ -f apps/web/src/videorc/videorc.css ]; then
-    [ "$count" -ge 1 ] || die "Videorc CSS is missing from app.asar"
-    ok "Videorc CSS in app.asar"
-  else
-    ok "Videorc look comes from the Custom CSS theme, not app.asar"
-  fi
-  echo "Next: open the app and check the Videorc look table in LOCAL_FORK.md"
+  echo "Next: $0 themes, then open the app and check the Videorc look table in LOCAL_FORK.md"
 }
 
 selector_check() {
   local label="$1" first="$2"
   shift 2
   local lines
-  lines="$(rg -F --no-filename -g '!videorc/**' -- "$first" apps/web/src || true)"
+  lines="$(rg -F --no-filename -- "$first" apps/web/src || true)"
   for token in "$@"; do
     lines="$(printf '%s\n' "$lines" | rg -F -- "$token" || true)"
   done
@@ -268,7 +246,19 @@ cmd_selectors() {
   selector_check "active sidebar row" 'bg-sidebar-row-active' || failed=1
   selector_check "tree item" 'role="treeitem"' || failed=1
   selector_check "toggle" 'data-slot="toggle"' || failed=1
-  [ "$failed" = 0 ] || die "Videorc selectors are missing. Update local-fork/videorc-theme.css, then the Custom CSS theme or apps/web/src/videorc/videorc.css"
+  [ "$failed" = 0 ] || die "Videorc selectors are missing. Update local-fork/videorc-theme.css, then run: $0 themes --apply"
+}
+
+cmd_themes() {
+  command -v bun >/dev/null || die "bun not found. Install: curl -fsSL https://bun.sh/install | bash"
+  local mode=plan rc=0
+  [ "${1:-}" = "--apply" ] && mode=apply
+  bun local-fork/videorc-themes.ts "$mode" || rc=$?
+  case "$rc" in
+    0) ;;
+    2) echo "Next: $0 themes --apply" ;;
+    *) die "Videorc themes failed" ;;
+  esac
 }
 
 cmd_upstream_status() {
@@ -292,13 +282,14 @@ usage() {
   cat <<EOF
 Usage: $0 <command>
 
-  sync [--continue]       Merge upstream/main, keep local pins, run vp i, check Videorc selectors
+  sync [--continue]       Merge upstream/main, keep local pins, run vp i, check Videorc selectors and themes
   check                   Typecheck and focused tests in apps/web
   push                    Push $BRANCH, fast-forward origin/main to upstream/main
   build [--allow-dirty]   Build the zip, install to $APP, sign, verify
   verify                  Verify the installed app
   selectors               Check that Videorc selectors still exist in apps/web/src
   upstream-status         Show which local changes upstream now has
+  themes [--apply]        Show, or publish, the Videorc environment themes in ~/.t3/userdata/themes
 EOF
 }
 
@@ -310,5 +301,6 @@ case "${1:-}" in
   verify) cmd_verify ;;
   selectors) cmd_selectors ;;
   upstream-status) cmd_upstream_status ;;
+  themes) shift; cmd_themes "$@" ;;
   *) usage; exit 1 ;;
 esac

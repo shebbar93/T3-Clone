@@ -4,15 +4,15 @@ This repo is a fork of [pingdotgg/t3code](https://github.com/pingdotgg/t3code).
 
 Branch `local/pr-28191` is upstream `main` plus these local changes:
 
-| Change                                                                                                                       | Why                                                                                                                                                                                                                            |
-| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Composer block caret (`apps/web/src/videorc/videorc.css`, `caret-shape: block` on `.composer-tiptap`)                        | Local preference. CSS only, prompt box only. Needs Chromium 144 or later (Electron 45 has Chromium 156).                                                                                                                       |
-| Thread details hidden by default (`rightPanelStore.ts`)                                                                      | Local preference.                                                                                                                                                                                                              |
-| Electron `45.2.3` (`apps/desktop/package.json`), `node-abi` `4.40.0` (`pnpm-workspace.yaml`)                                 | Electron 44 (Chromium 152) draws a typed `->` as `>` after the next space. Electron 45 (Chromium 156) draws the arrow correctly.                                                                                               |
-| Videorc look (`apps/web/src/videorc/`, one import in `apps/web/src/main.tsx`)                                                | Light skeuomorphic style from [Videorc UI](https://ui.videorc.com). CSS only. See [Videorc look](#videorc-look). It can move to a Custom CSS theme. See [Move the Videorc look to a theme](#move-the-videorc-look-to-a-theme). |
-| Composer focus (`ChatView.tsx`, `KeybindingsSettings.logic.ts`, `composer.focus` in `packages/contracts/src/keybindings.ts`) | The `composer.focus` command puts focus in the prompt box. It has no default key. Bind Ctrl+L in Settings > Keybindings. Cmd+W also puts focus in the prompt box when it closes the last right panel surface.                  |
-| Thread cycle (`resolveAdjacentThreadId` in `Sidebar.logic.ts`)                                                               | `thread.previous` and `thread.next` go around from the first thread to the last, and from the last to the first.                                                                                                               |
-| First working thread (`thread.firstWorking` in contracts, `packages/shared/src/keybindings.ts`, `Sidebar.tsx`)               | `mod+shift+w` goes to the first thread in the Working section. If that thread is open, it stays open.                                                                                                                          |
+| Change                                                                                                                       | Why                                                                                                                                                                                                           |
+| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Composer block caret (`caret-shape: block` on `.composer-tiptap` in `local-fork/videorc-theme.css`)                          | Local preference. Part of the [Videorc themes](#videorc-themes). Needs Chromium 144 or later (Electron 45 has Chromium 156).                                                                                  |
+| Thread details hidden by default (`rightPanelStore.ts`)                                                                      | Local preference.                                                                                                                                                                                             |
+| Electron `45.2.3` (`apps/desktop/package.json`), `node-abi` `4.40.0` (`pnpm-workspace.yaml`)                                 | Electron 44 (Chromium 152) draws a typed `->` as `>` after the next space. Electron 45 (Chromium 156) draws the arrow correctly.                                                                              |
+| Videorc look (`local-fork/`, published as environment themes)                                                                | Light skeuomorphic style from [Videorc UI](https://ui.videorc.com). No app code change. See [Videorc themes](#videorc-themes).                                                                                |
+| Composer focus (`ChatView.tsx`, `KeybindingsSettings.logic.ts`, `composer.focus` in `packages/contracts/src/keybindings.ts`) | The `composer.focus` command puts focus in the prompt box. It has no default key. Bind Ctrl+L in Settings > Keybindings. Cmd+W also puts focus in the prompt box when it closes the last right panel surface. |
+| Thread cycle (`resolveAdjacentThreadId` in `Sidebar.logic.ts`)                                                               | `thread.previous` and `thread.next` go around from the first thread to the last, and from the last to the first.                                                                                              |
+| First working thread (`thread.firstWorking` in contracts, `packages/shared/src/keybindings.ts`, `Sidebar.tsx`)               | `mod+shift+w` goes to the first thread in the Working section. If that thread is open, it stays open.                                                                                                         |
 
 | Remote     | URL                                              |
 | ---------- | ------------------------------------------------ |
@@ -32,16 +32,17 @@ Quit `T3 Code (Nightly)` before you open it. Both apps use the bundle id `com.t3
 
 `scripts/local-fork.sh` does the update, build, and checks. Run `scripts/local-fork.sh` with no command to see the commands. If a command fails and its error does not tell you the fix, use the [manual steps](#manual-steps) for that part.
 
-| Command                 | What it does                                                                                                                                                                                                                                                                                            |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sync`                  | Merges `upstream/main`. It takes upstream's file for conflicts in `pnpm-lock.yaml`, `apps/desktop/package.json`, `pnpm-workspace.yaml`, and `apps/web/src/main.tsx`. Then it puts back the Electron and `node-abi` minimum versions and the Videorc import, runs `vp i`, commits, and runs `selectors`. |
-| `sync --continue`       | Use this after you resolve other conflicts by hand and `git add` them.                                                                                                                                                                                                                                  |
-| `check`                 | Typecheck and focused tests in `apps/web`.                                                                                                                                                                                                                                                              |
-| `push`                  | Pushes the branch, then fast-forwards `origin/main` to `upstream/main`, so [PR #1](https://github.com/shebbar93/T3-Clone/pull/1) shows only local changes. It stops if this is not a fast-forward.                                                                                                      |
-| `build [--allow-dirty]` | Stops if the tree is dirty, the dev Electron watcher runs from this repo, or the app is open. Builds the zip (the DMG target fails on this machine), installs the app to `~/Applications`, signs it, and runs `verify`.                                                                                 |
-| `verify`                | Checks the installed app: Electron `45.2.3` or higher, and the Videorc CSS is in `app.asar`.                                                                                                                                                                                                            |
-| `selectors`             | Checks that each selector in the [Videorc look](#videorc-look) table still exists in `apps/web/src`.                                                                                                                                                                                                    |
-| `upstream-status`       | Prints `KEEP` or `REMOVE` for each local change. See [When upstream has the local fixes](#when-upstream-has-the-local-fixes).                                                                                                                                                                           |
+| Command                 | What it does                                                                                                                                                                                                                                                         |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sync`                  | Merges `upstream/main`. It takes upstream's file for conflicts in `pnpm-lock.yaml`, `apps/desktop/package.json`, and `pnpm-workspace.yaml`. Then it puts back the Electron and `node-abi` minimum versions, runs `vp i`, commits, and runs `selectors` and `themes`. |
+| `sync --continue`       | Use this after you resolve other conflicts by hand and `git add` them.                                                                                                                                                                                               |
+| `check`                 | Typecheck and focused tests in `apps/web`.                                                                                                                                                                                                                           |
+| `push`                  | Pushes the branch, then fast-forwards `origin/main` to `upstream/main`, so [PR #1](https://github.com/shebbar93/T3-Clone/pull/1) shows only local changes. It stops if this is not a fast-forward.                                                                   |
+| `build [--allow-dirty]` | Stops if the tree is dirty, the dev Electron watcher runs from this repo, or the app is open. Builds the zip (the DMG target fails on this machine), installs the app to `~/Applications`, signs it, and runs `verify`.                                              |
+| `verify`                | Checks the installed app: Electron `45.2.3` or higher.                                                                                                                                                                                                               |
+| `selectors`             | Checks that each selector in the [Videorc look](#videorc-look) table still exists in `apps/web/src`.                                                                                                                                                                 |
+| `upstream-status`       | Prints `KEEP` or `REMOVE` for each local change. See [When upstream has the local fixes](#when-upstream-has-the-local-fixes).                                                                                                                                        |
+| `themes [--apply]`      | Without `--apply`, shows what would change in the published [Videorc themes](#videorc-themes) and changes nothing. With `--apply`, publishes them.                                                                                                                   |
 
 Usual update:
 
@@ -49,13 +50,14 @@ Usual update:
 2. `scripts/local-fork.sh check`
 3. `scripts/local-fork.sh push`
 4. `scripts/local-fork.sh build`
-5. Open the app and check the [Videorc look](#videorc-look) table.
+5. `scripts/local-fork.sh themes --apply`
+6. Open the app and check the [Videorc look](#videorc-look) table.
 
 If `build` stops on the dev watcher, stop it with the `kill <pid>` it prints. The watcher restarts the dev Electron app each time the build writes `apps/desktop/dist-electron`. The dev app then shows "This T3 home is unavailable".
 
 ## Videorc look
 
-`apps/web/src/videorc/videorc.css` restyles existing components with CSS selectors. It changes no component code, so a merge does not conflict on it. But if upstream renames a selector below, that style stops with no error. `scripts/local-fork.sh selectors` finds a selector that was removed. It cannot show that the look is correct, so after a merge also check these in the app:
+`local-fork/videorc-theme.css` restyles existing components with CSS selectors. It is not in the app code. The script publishes it as theme CSS, so a merge cannot conflict on it. But if upstream renames a selector below, that style stops with no error. `scripts/local-fork.sh selectors` finds a selector that was removed. It cannot show that the look is correct, so after a merge also check these in the app:
 
 | Look                                    | Depends on                                                                                                |
 | --------------------------------------- | --------------------------------------------------------------------------------------------------------- |
@@ -69,49 +71,69 @@ If `build` stops on the dev watcher, stop it with the `kill <pid>` it prints. Th
 | Banner rims                             | `[data-composer-banner-surface]`, `--chat-composer-attached-outline`                                      |
 | Chrome plate                            | `.bg-sidebar-row-active`, `[role="treeitem"][aria-selected="true"]`, `[data-slot="toggle"][data-pressed]` |
 
-To remove the look: delete `apps/web/src/videorc/` and its import in `apps/web/src/main.tsx`.
+## Videorc themes
+
+Upstream keeps custom CSS inside each theme. There is no CSS that applies to all themes. So `scripts/local-fork.sh themes --apply` publishes one environment theme for each palette, each with the Videorc CSS. The local T3 server reads them from `~/.t3/userdata/themes/` and sends them to the desktop app and the local web client. The server watches the folder, so you do not restart it.
+
+| Input in git                                                                                        | Published as                                                                                                  |
+| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `local-fork/videorc-theme.css`                                                                      | The `css` of each theme below                                                                                 |
+| Built-in palettes from `apps/web/src/themePalette.ts` (T3 Code, T3 Chat, Grove, Ocean, Ember, Iris) | `<name>-videorc.json`, shown as "&lt;Name&gt; Videorc"                                                        |
+| `local-fork/themes/custom/*.json` (your custom themes, exported from the app)                       | `<name>-videorc.json`, shown as "&lt;Name&gt; Videorc". The original custom theme in the app does not change. |
+| `local-fork/themes/environment/*.json` (environment themes, such as Carbonfox)                      | The same file name. The CSS is added in place.                                                                |
+
+The output depends only on the files in git, so the same commit always gives the same files. `themes` shows each file as `ADD`, `UPDATE`, `SAME`, or `REMOVE`, and exits with code 2 if a change is waiting. `~/.t3/userdata/themes/.videorc-manifest` lists the files that the script owns. If you remove an input, `--apply` removes its file. It shows other files in the folder as `OTHER` and does not change them.
+
+It stops with an error and writes nothing if:
+
+- A theme fails the server's `EnvironmentThemeFile` schema, or loses its CSS.
+- The CSS loads a remote file (`url()`, `@import`, `image-set()`).
+- Two inputs give the same id, or an id is reserved.
+- The folder would have more than 32 theme files. The server reads only 32.
+
+It writes each file to a temp file, then renames it, so the server never reads a partial file. It needs `bun`.
+
+### Change the Videorc CSS
+
+1. Edit `local-fork/videorc-theme.css`.
+2. Run `scripts/local-fork.sh themes`. Each theme must show `UPDATE`.
+3. Run `scripts/local-fork.sh themes --apply`.
+4. Commit `local-fork/videorc-theme.css`.
+
+### Add or change a custom theme
+
+1. In the app, go to **Settings > Appearance**. On the theme card, click the download button. The file name is `<id>.json`.
+2. Move the file to `local-fork/themes/custom/`. For a changed theme, replace the old file with the same name.
+3. Run `scripts/local-fork.sh themes`, then `scripts/local-fork.sh themes --apply`.
+4. Commit the file.
+
+To remove a custom theme from the Videorc set, delete its file from `local-fork/themes/custom/`, then run `themes --apply`.
+
+### Add or change an environment theme
+
+1. Copy the theme file without the Videorc CSS to `local-fork/themes/environment/<id>.json`. If the file has a `css` field, the script replaces it.
+2. Run `scripts/local-fork.sh themes`, then `scripts/local-fork.sh themes --apply`.
+3. Commit the file.
+
+To change the palette of an environment theme, change its file in `local-fork/themes/environment/`, not in `~/.t3/userdata/themes/`. The next `--apply` writes over the file in `~/.t3/userdata/themes/`.
+
+### Use a theme
+
+1. In the app, go to **Settings > Appearance**.
+2. Select a theme with "Videorc" in its name, or Carbonfox.
+3. Do not click **Duplicate** on a Videorc theme. A copy does not get later changes from `--apply`.
+
+### Undo
+
+- One theme: remove its input file, then run `themes --apply`.
+- All themes: delete the files listed in `~/.t3/userdata/themes/.videorc-manifest`. For Carbonfox, copy `local-fork/themes/environment/carbonfox.json` to `~/.t3/userdata/themes/` to get the version without CSS.
 
 ### Backup
 
-| Copy                                                   | Kept by                                  |
-| ------------------------------------------------------ | ---------------------------------------- |
-| `local-fork/videorc-theme.css`                         | Git, on this branch and `origin`         |
-| `~/Documents/t3code-videorc-backup/videorc-<date>.css` | Your disk, outside the repo              |
-| Theme export JSON (after you do the steps below)       | Your disk, from **Export** in the editor |
-
-`local-fork/videorc-theme.css` is the source copy. Change it first, then copy it to the place that applies the look.
-
-### Move the Videorc look to a theme
-
-Upstream T3 Code has Custom CSS in the theme editor. The CSS applies after the app's own styles, so it gives the same result as the code copy. Then the fork does not change app code for the look, and a merge cannot conflict on it.
-
-The Videorc CSS is 10,119 characters. The limit is 50,000. It does not use `url()`, `@import`, `image-set()`, or `\`, so the filter removes nothing. It sets only `--vrc-*` variables, so it does not fight the theme palette.
-
-1. Open T3 Code (Beta). Go to **Settings > Appearance**.
-2. Click **Create theme**. Keep the palette that you use now. Name the theme `Videorc`.
-3. Open **Custom CSS** in the theme editor.
-4. Copy the full backup file:
-   ```sh
-   pbcopy < ~/Documents/Github/personal/t3code/local-fork/videorc-theme.css
-   ```
-5. Paste it into **Custom CSS**. Save the theme. Select the `Videorc` theme.
-6. Click **Export**. Keep the JSON in `~/Documents/t3code-videorc-backup/`. The theme is stored only in this app's local storage.
-7. Remove the code copy:
-   ```sh
-   git rm -r apps/web/src/videorc
-   sed -i '' '/^import "\.\/videorc\/videorc\.css";$/d' apps/web/src/main.tsx
-   git add apps/web/src/main.tsx
-   git commit -m "chore(local): Videorc look comes from a Custom CSS theme"
-   ```
-   `scripts/local-fork.sh` sees that `apps/web/src/videorc/videorc.css` is gone. Then `sync` does not put the import back, and `verify` does not look for the CSS in `app.asar`.
-8. Run `scripts/local-fork.sh build`.
-9. Open the app. Check each line in the [Videorc look](#videorc-look) table.
-
-If the look is wrong after step 9, select another theme. To get the code copy back, run `git revert HEAD` on the step 7 commit, then `scripts/local-fork.sh build`.
-
-To use the look on another device or client of this server, publish it as an environment theme. Put the step 6 JSON in `~/.t3/userdata/themes/videorc.json`, then run `t3 theme set videorc`. See `docs/user/appearance.md`, section "Environment themes".
-
-After a selector change in `local-fork/videorc-theme.css`, do steps 3 to 6 again.
+| Copy                                 | Kept by                                                                                |
+| ------------------------------------ | -------------------------------------------------------------------------------------- |
+| `local-fork/`                        | Git, on this branch and `origin`                                                       |
+| `~/Documents/t3code-videorc-backup/` | Your disk, outside the repo. It has the CSS and the theme files from 16 November 2026. |
 
 ## When upstream has the local fixes
 
@@ -139,7 +161,6 @@ These are the steps that the script does. Use them when the script fails, or to 
 2. If there is a conflict, fix the files, then `git add <file>` and `git commit`.
    If `apps/desktop/package.json` conflicts on `electron`, keep the higher version. Do not go below `45.2.3`. Keep `node-abi` new enough to know that Electron version, or the build fails with `Could not detect abi`.
    If `pnpm-lock.yaml` conflicts, take upstream's file (`git checkout --theirs pnpm-lock.yaml`), run `vp i` to put the local Electron and `node-abi` versions back, then `git add pnpm-lock.yaml`.
-   If `apps/web/src/main.tsx` conflicts, keep upstream's lines and put `import "./videorc/videorc.css";` back after `import "./index.css";`.
 3. Install dependencies: `vp i`
 4. Optional check:
    ```sh
@@ -191,10 +212,10 @@ If the cwd is `apps/desktop` in this repo, stop it with `kill <pid>`.
    APP="$HOME/Applications/T3 Code (Beta).app"
    /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Contents/Info.plist"
    /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP/Contents/Frameworks/Electron Framework.framework/Resources/Info.plist"
-   grep -c vrc-chromatic-spin "$APP/Contents/Resources/app.asar"
    ```
-   The first line is the app version from `apps/desktop/package.json`. The second line must be `45.2.3` or higher. The third line must be `1` or higher, or the Videorc look is missing.
-4. Open the app and check the [Videorc look](#videorc-look) table.
+   The first line is the app version from `apps/desktop/package.json`. The second line must be `45.2.3` or higher.
+4. Run `scripts/local-fork.sh themes --apply`.
+5. Open the app and check the [Videorc look](#videorc-look) table.
 
 `/Applications` needs admin rights, so the app goes to `~/Applications`.
 
@@ -208,5 +229,5 @@ git show upstream/main:apps/web/src/index.css | grep -n 'caret-shape'
 ```
 
 If upstream has Electron 45 or later, remove the local Electron and `node-abi` change.
-If upstream sets `caret-shape` on `.composer-tiptap`, remove the local caret change.
+If upstream sets `caret-shape` on `.composer-tiptap`, remove the `caret-shape` rule from `local-fork/videorc-theme.css`, then run `scripts/local-fork.sh themes --apply`.
 If no local fix is left, build from `upstream/main` with the same steps.
