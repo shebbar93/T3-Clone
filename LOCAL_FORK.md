@@ -4,15 +4,15 @@ This repo is a fork of [pingdotgg/t3code](https://github.com/pingdotgg/t3code).
 
 Branch `local/pr-28191` is upstream `main` plus these local changes:
 
-| Change                                                                                                                       | Why                                                                                                                                                                                                           |
-| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Composer block caret (`apps/web/src/videorc/videorc.css`, `caret-shape: block` on `.composer-tiptap`)                        | Local preference. CSS only, prompt box only. Needs Chromium 144 or later (Electron 45 has Chromium 156).                                                                                                      |
-| Thread details hidden by default (`rightPanelStore.ts`)                                                                      | Local preference.                                                                                                                                                                                             |
-| Electron `45.2.3` (`apps/desktop/package.json`), `node-abi` `4.40.0` (`pnpm-workspace.yaml`)                                 | Electron 44 (Chromium 152) draws a typed `->` as `>` after the next space. Electron 45 (Chromium 156) draws the arrow correctly.                                                                              |
-| Videorc look (`apps/web/src/videorc/`, one import in `apps/web/src/main.tsx`)                                                | Light skeuomorphic style from [Videorc UI](https://ui.videorc.com). CSS only. See [Videorc look](#videorc-look).                                                                                              |
-| Composer focus (`ChatView.tsx`, `KeybindingsSettings.logic.ts`, `composer.focus` in `packages/contracts/src/keybindings.ts`) | The `composer.focus` command puts focus in the prompt box. It has no default key. Bind Ctrl+L in Settings > Keybindings. Cmd+W also puts focus in the prompt box when it closes the last right panel surface. |
-| Thread cycle (`resolveAdjacentThreadId` in `Sidebar.logic.ts`)                                                               | `thread.previous` and `thread.next` go around from the first thread to the last, and from the last to the first.                                                                                              |
-| First working thread (`thread.firstWorking` in contracts, `packages/shared/src/keybindings.ts`, `Sidebar.tsx`)               | `mod+shift+w` goes to the first thread in the Working section. If that thread is open, it stays open.                                                                                                         |
+| Change                                                                                                                       | Why                                                                                                                                                                                                                            |
+| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Composer block caret (`apps/web/src/videorc/videorc.css`, `caret-shape: block` on `.composer-tiptap`)                        | Local preference. CSS only, prompt box only. Needs Chromium 144 or later (Electron 45 has Chromium 156).                                                                                                                       |
+| Thread details hidden by default (`rightPanelStore.ts`)                                                                      | Local preference.                                                                                                                                                                                                              |
+| Electron `45.2.3` (`apps/desktop/package.json`), `node-abi` `4.40.0` (`pnpm-workspace.yaml`)                                 | Electron 44 (Chromium 152) draws a typed `->` as `>` after the next space. Electron 45 (Chromium 156) draws the arrow correctly.                                                                                               |
+| Videorc look (`apps/web/src/videorc/`, one import in `apps/web/src/main.tsx`)                                                | Light skeuomorphic style from [Videorc UI](https://ui.videorc.com). CSS only. See [Videorc look](#videorc-look). It can move to a Custom CSS theme. See [Move the Videorc look to a theme](#move-the-videorc-look-to-a-theme). |
+| Composer focus (`ChatView.tsx`, `KeybindingsSettings.logic.ts`, `composer.focus` in `packages/contracts/src/keybindings.ts`) | The `composer.focus` command puts focus in the prompt box. It has no default key. Bind Ctrl+L in Settings > Keybindings. Cmd+W also puts focus in the prompt box when it closes the last right panel surface.                  |
+| Thread cycle (`resolveAdjacentThreadId` in `Sidebar.logic.ts`)                                                               | `thread.previous` and `thread.next` go around from the first thread to the last, and from the last to the first.                                                                                                               |
+| First working thread (`thread.firstWorking` in contracts, `packages/shared/src/keybindings.ts`, `Sidebar.tsx`)               | `mod+shift+w` goes to the first thread in the Working section. If that thread is open, it stays open.                                                                                                                          |
 
 | Remote     | URL                                              |
 | ---------- | ------------------------------------------------ |
@@ -70,6 +70,48 @@ If `build` stops on the dev watcher, stop it with the `kill <pid>` it prints. Th
 | Chrome plate                            | `.bg-sidebar-row-active`, `[role="treeitem"][aria-selected="true"]`, `[data-slot="toggle"][data-pressed]` |
 
 To remove the look: delete `apps/web/src/videorc/` and its import in `apps/web/src/main.tsx`.
+
+### Backup
+
+| Copy                                                   | Kept by                                  |
+| ------------------------------------------------------ | ---------------------------------------- |
+| `local-fork/videorc-theme.css`                         | Git, on this branch and `origin`         |
+| `~/Documents/t3code-videorc-backup/videorc-<date>.css` | Your disk, outside the repo              |
+| Theme export JSON (after you do the steps below)       | Your disk, from **Export** in the editor |
+
+`local-fork/videorc-theme.css` is the source copy. Change it first, then copy it to the place that applies the look.
+
+### Move the Videorc look to a theme
+
+Upstream T3 Code has Custom CSS in the theme editor. The CSS applies after the app's own styles, so it gives the same result as the code copy. Then the fork does not change app code for the look, and a merge cannot conflict on it.
+
+The Videorc CSS is 10,119 characters. The limit is 50,000. It does not use `url()`, `@import`, `image-set()`, or `\`, so the filter removes nothing. It sets only `--vrc-*` variables, so it does not fight the theme palette.
+
+1. Open T3 Code (Beta). Go to **Settings > Appearance**.
+2. Click **Create theme**. Keep the palette that you use now. Name the theme `Videorc`.
+3. Open **Custom CSS** in the theme editor.
+4. Copy the full backup file:
+   ```sh
+   pbcopy < ~/Documents/Github/personal/t3code/local-fork/videorc-theme.css
+   ```
+5. Paste it into **Custom CSS**. Save the theme. Select the `Videorc` theme.
+6. Click **Export**. Keep the JSON in `~/Documents/t3code-videorc-backup/`. The theme is stored only in this app's local storage.
+7. Remove the code copy:
+   ```sh
+   git rm -r apps/web/src/videorc
+   sed -i '' '/^import "\.\/videorc\/videorc\.css";$/d' apps/web/src/main.tsx
+   git add apps/web/src/main.tsx
+   git commit -m "chore(local): Videorc look comes from a Custom CSS theme"
+   ```
+   `scripts/local-fork.sh` sees that `apps/web/src/videorc/videorc.css` is gone. Then `sync` does not put the import back, and `verify` does not look for the CSS in `app.asar`.
+8. Run `scripts/local-fork.sh build`.
+9. Open the app. Check each line in the [Videorc look](#videorc-look) table.
+
+If the look is wrong after step 9, select another theme. To get the code copy back, run `git revert HEAD` on the step 7 commit, then `scripts/local-fork.sh build`.
+
+To use the look on another device or client of this server, publish it as an environment theme. Put the step 6 JSON in `~/.t3/userdata/themes/videorc.json`, then run `t3 theme set videorc`. See `docs/user/appearance.md`, section "Environment themes".
+
+After a selector change in `local-fork/videorc-theme.css`, do steps 3 to 6 again.
 
 ## When upstream has the local fixes
 

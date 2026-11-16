@@ -68,7 +68,9 @@ pin_node_abi() {
 
 pin_videorc_import() {
   local file=apps/web/src/main.tsx
-  if grep -qF 'import "./videorc/videorc.css";' "$file"; then
+  if [ ! -f apps/web/src/videorc/videorc.css ]; then
+    ok "videorc import not needed (Videorc look is a Custom CSS theme)"
+  elif grep -qF 'import "./videorc/videorc.css";' "$file"; then
     ok "videorc import"
   else
     grep -qF 'import "./index.css";' "$file" || die "import \"./index.css\" not found in $file"
@@ -213,8 +215,12 @@ cmd_verify() {
   ok "app version $version"
   version_ge "$electron" "$MIN_ELECTRON" || die "Electron $electron is below $MIN_ELECTRON"
   ok "Electron $electron"
-  [ "$count" -ge 1 ] || die "Videorc CSS is missing from app.asar"
-  ok "Videorc CSS in app.asar"
+  if [ -f apps/web/src/videorc/videorc.css ]; then
+    [ "$count" -ge 1 ] || die "Videorc CSS is missing from app.asar"
+    ok "Videorc CSS in app.asar"
+  else
+    ok "Videorc look comes from the Custom CSS theme, not app.asar"
+  fi
   echo "Next: open the app and check the Videorc look table in LOCAL_FORK.md"
 }
 
@@ -262,7 +268,7 @@ cmd_selectors() {
   selector_check "active sidebar row" 'bg-sidebar-row-active' || failed=1
   selector_check "tree item" 'role="treeitem"' || failed=1
   selector_check "toggle" 'data-slot="toggle"' || failed=1
-  [ "$failed" = 0 ] || die "Videorc selectors are missing. Update apps/web/src/videorc/videorc.css"
+  [ "$failed" = 0 ] || die "Videorc selectors are missing. Update local-fork/videorc-theme.css, then the Custom CSS theme or apps/web/src/videorc/videorc.css"
 }
 
 cmd_upstream_status() {
