@@ -17,6 +17,7 @@ const Schema: typeof import("effect/Schema") = await import(
 const [mode = "plan", dirArg] = process.argv.slice(2);
 const themesDir = dirArg ?? NodePath.join(NodeOS.homedir(), ".t3", "userdata", "themes");
 const css = NodeFS.readFileSync(NodePath.join(here, "videorc-theme.css"), "utf8");
+const draftingCss = NodeFS.readFileSync(NodePath.join(here, "drafting.css"), "utf8");
 const decode = Schema.decodeUnknownExit(Schema.fromJsonString(EnvironmentThemeFile));
 const isId = Schema.is(EnvironmentThemeId);
 
@@ -41,7 +42,7 @@ const jsonFiles = (dir: string) =>
 const readJson = (path: string): Record<string, unknown> =>
   JSON.parse(NodeFS.readFileSync(path, "utf8"));
 
-type Output = { id: string; name: string; source: string; text: string };
+type Output = { id: string; name: string; source: string; text: string; css: string };
 const outputs: Output[] = [];
 
 const addCopy = (source: string, theme: Record<string, unknown>) => {
@@ -51,6 +52,7 @@ const addCopy = (source: string, theme: Record<string, unknown>) => {
     id: `${slug(String(rest.name))}-videorc`,
     name,
     source,
+    css,
     text: `${JSON.stringify({ ...rest, name, css }, null, 2)}\n`,
   });
 };
@@ -78,17 +80,26 @@ for (const file of jsonFiles(NodePath.join(here, "themes", "custom"))) {
   addCopy(`custom ${file}`, JSON.parse(P.serializeThemeFile(theme)));
 }
 
-for (const file of jsonFiles(NodePath.join(here, "themes", "environment"))) {
-  const { css: _css, ...theme } = readJson(NodePath.join(here, "themes", "environment", file));
+const environmentDir = NodePath.join(here, "themes", "environment");
+for (const file of jsonFiles(environmentDir)) {
+  const id = file.slice(0, -".json".length);
+  const { css: _css, ...theme } = readJson(NodePath.join(environmentDir, file));
+  const sidecarPath = NodePath.join(environmentDir, `${id}.css`);
+  const sidecar = NodeFS.existsSync(sidecarPath) ? NodeFS.readFileSync(sidecarPath, "utf8") : null;
+  if (sidecar !== null && themeCssLoadsRemoteFiles(sidecar)) fail(`${id}.css loads remote files`);
+  const parts = [css, sidecar, id.endsWith("-drafting") ? draftingCss : null];
+  const themeCss = parts.filter((part) => part !== null).join("\n");
   outputs.push({
-    id: file.slice(0, -".json".length),
+    id,
     name: String(theme.name),
     source: `environment ${file}`,
-    text: `${JSON.stringify({ ...theme, css }, null, 2)}\n`,
+    css: themeCss,
+    text: `${JSON.stringify({ ...theme, css: themeCss }, null, 2)}\n`,
   });
 }
 
 if (themeCssLoadsRemoteFiles(css)) fail("videorc-theme.css loads remote files");
+if (themeCssLoadsRemoteFiles(draftingCss)) fail("drafting.css loads remote files");
 
 const ids = new Set<string>();
 for (const output of outputs) {
@@ -99,7 +110,7 @@ for (const output of outputs) {
   ids.add(output.id);
   const decoded = decode(output.text);
   if (decoded._tag !== "Success") fail(`${output.source} is not a valid environment theme`);
-  if (decoded._tag === "Success" && decoded.value.css !== css) {
+  if (decoded._tag === "Success" && decoded.value.css !== output.css) {
     fail(`${output.source} lost its CSS`);
   }
 }

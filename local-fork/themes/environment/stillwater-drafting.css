@@ -1,0 +1,480 @@
+:root {
+  --stillwater-canvas: #1d2021;
+  --stillwater-canvas-raised: #222526;
+  --stillwater-canvas-overlay: #1a1c1d;
+  --stillwater-border: #3c3836;
+  --stillwater-text: #ebdbb2;
+  --stillwater-text-muted: #8f8f99;
+  --stillwater-text-faint: #6d6d75;
+  --stillwater-warm: #c4a489;
+  --stillwater-accent: #5aa8b4;
+  --stillwater-accent-hover: #6ebcc6;
+  --stillwater-accent-deep: #3d7a88;
+  --stillwater-on-accent: #1d2021;
+  --stillwater-error: #f44747;
+  --stillwater-warning: #d9c679;
+  --stillwater-selection: #3a4e64;
+  --stillwater-syntax-comment: #88846f;
+  --stillwater-syntax-string: #e6db74;
+  --stillwater-syntax-keyword: #f92672;
+  --stillwater-syntax-function: #a6e22e;
+  --stillwater-syntax-type: #a6e22e;
+  --stillwater-syntax-support: #66d9ef;
+  --stillwater-syntax-constant: #ae81ff;
+  --stillwater-syntax-parameter: #fd971f;
+  --stillwater-syntax-variable: #f8f8f2;
+}
+:root {
+  --radius: 0.5rem !important;
+  --ob-card-radius: 12px;
+  --ob-sheet-radius: 16px;
+}
+.dark {
+  --ob-glass: color-mix(in srgb, var(--stillwater-canvas-raised) 42%, transparent);
+  --ob-edge: color-mix(in srgb, var(--stillwater-text) 7%, transparent);
+  --ob-shine: color-mix(in srgb, var(--stillwater-text) 6%, transparent);
+  --ob-shadow: inset 0 1px 0 var(--ob-shine), 0 10px 30px rgb(0 0 0 / 0.25);
+  --ob-sheet: color-mix(in srgb, var(--stillwater-canvas-raised) 76%, transparent);
+  --ob-menu: color-mix(in srgb, var(--stillwater-canvas) 97%, transparent);
+  --ob-bar: color-mix(in srgb, var(--stillwater-canvas-overlay) 78%, transparent);
+  --ob-well: color-mix(in srgb, var(--stillwater-canvas-overlay) 55%, transparent);
+  --ob-focus: color-mix(in srgb, var(--stillwater-accent) 40%, transparent);
+  --ob-halo: color-mix(in srgb, var(--stillwater-accent) 8%, transparent);
+  --ob-workspace-background:
+    radial-gradient(
+      60% 45% at 8% 6%,
+      color-mix(in srgb, var(--stillwater-accent-deep) 18%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      45% 50% at 96% 96%,
+      color-mix(in srgb, var(--stillwater-warm) 9%, transparent),
+      transparent 70%
+    ),
+    var(--stillwater-canvas);
+}
+:root:not(.dark) {
+  --ob-glass: rgb(235 228 216 / 0.6);
+  --ob-edge: rgb(60 56 54 / 0.12);
+  --ob-shine: rgb(255 255 255 / 0.55);
+  --ob-shadow: inset 0 1px 0 var(--ob-shine), 0 10px 30px rgb(60 56 54 / 0.08);
+  --ob-sheet: rgb(244 239 230 / 0.9);
+  --ob-menu: rgb(244 239 230 / 0.97);
+  --ob-bar: rgb(235 228 216 / 0.85);
+  --ob-well: rgb(230 223 210 / 0.6);
+  --ob-focus: color-mix(in srgb, var(--stillwater-accent) 40%, transparent);
+  --ob-halo: color-mix(in srgb, var(--stillwater-accent) 8%, transparent);
+}
+.dark [data-slot="sidebar-inset"] {
+  margin-right: calc(-1 * var(--desktop-window-right-resize-inset, 0px)) !important;
+  padding-right: var(--desktop-window-right-resize-inset, 0px) !important;
+  background: var(--ob-workspace-background) !important;
+}
+.dark
+  [data-slot="sidebar-inset"]
+  :is(
+    div:has(> [data-chat-column]),
+    [data-chat-column],
+    [data-workspace-area="conversation"],
+    .messages-timeline-scroll
+  ) {
+  background: transparent !important;
+}
+.messages-timeline-scroll::-webkit-scrollbar-track {
+  margin-bottom: var(--radius);
+}
+[data-slot="sidebar-inner"] {
+  background: var(--ob-bar) !important;
+  backdrop-filter: blur(20px) saturate(140%);
+  border-color: var(--ob-edge) !important;
+}
+.dark {
+  --ob-stars:
+    radial-gradient(
+      circle at 38px 22px,
+      color-mix(in srgb, var(--stillwater-text) 50%, transparent) 0.56px,
+      transparent 1.04px
+    ),
+    radial-gradient(
+      circle at 58px 8px,
+      color-mix(in srgb, var(--stillwater-warm) 60%, transparent) 0.7px,
+      transparent 1.3px
+    ),
+    radial-gradient(
+      circle at 84px 16px,
+      color-mix(in srgb, var(--stillwater-accent) 55%, transparent) 0.56px,
+      transparent 1.04px
+    ),
+    radial-gradient(
+      circle at 126px 20px,
+      color-mix(in srgb, var(--stillwater-text) 50%, transparent) 0.56px,
+      transparent 1.04px
+    ),
+    radial-gradient(
+      circle at 148px 11px,
+      color-mix(in srgb, var(--stillwater-warm) 55%, transparent) 0.7px,
+      transparent 1.3px
+    ),
+    radial-gradient(
+      circle at 170px 24px,
+      color-mix(in srgb, var(--stillwater-text) 45%, transparent) 0.56px,
+      transparent 1.04px
+    ),
+    radial-gradient(
+      circle at 214px 18px,
+      color-mix(in srgb, var(--stillwater-accent) 55%, transparent) 0.56px,
+      transparent 1.04px
+    ),
+    radial-gradient(
+      circle at 236px 8px,
+      color-mix(in srgb, var(--stillwater-text) 60%, transparent) 0.7px,
+      transparent 1.3px
+    ),
+    radial-gradient(
+      circle at 258px 20px,
+      color-mix(in srgb, var(--stillwater-warm) 50%, transparent) 0.63px,
+      transparent 1.17px
+    ),
+    radial-gradient(
+      circle at 26px 34px,
+      color-mix(in srgb, var(--stillwater-text) 40%, transparent) 0.56px,
+      transparent 1.04px
+    ),
+    radial-gradient(
+      circle at 118px 34px,
+      color-mix(in srgb, var(--stillwater-accent) 45%, transparent) 0.56px,
+      transparent 1.04px
+    ),
+    radial-gradient(
+      circle at 202px 32px,
+      color-mix(in srgb, var(--stillwater-text) 45%, transparent) 0.56px,
+      transparent 1.04px
+    ),
+    radial-gradient(
+      circle at 268px 34px,
+      color-mix(in srgb, var(--stillwater-text) 40%, transparent) 0.56px,
+      transparent 1.04px
+    ),
+    radial-gradient(
+      circle at 92px 44px,
+      color-mix(in srgb, var(--stillwater-text) 30%, transparent) 0.49px,
+      transparent 0.91px
+    ),
+    radial-gradient(
+      circle at 182px 48px,
+      color-mix(in srgb, var(--stillwater-accent) 30%, transparent) 0.49px,
+      transparent 0.91px
+    ),
+    radial-gradient(
+      circle at 40px 52px,
+      color-mix(in srgb, var(--stillwater-text) 25%, transparent) 0.49px,
+      transparent 0.91px
+    );
+  --ob-twinkle:
+    radial-gradient(
+      circle at 14px 10px,
+      color-mix(in srgb, var(--stillwater-text) 95%, transparent) 1.05px,
+      transparent 1.95px
+    ),
+    radial-gradient(
+      circle at 104px 7px,
+      color-mix(in srgb, var(--stillwater-warm) 90%, transparent) 1.05px,
+      transparent 1.95px
+    ),
+    radial-gradient(
+      circle at 192px 9px,
+      color-mix(in srgb, var(--stillwater-text) 90%, transparent) 1.05px,
+      transparent 1.95px
+    ),
+    radial-gradient(
+      circle at 278px 11px,
+      color-mix(in srgb, var(--stillwater-accent) 90%, transparent) 1px,
+      transparent 1.85px
+    ),
+    radial-gradient(
+      circle at 62px 41px,
+      color-mix(in srgb, var(--stillwater-text) 100%, transparent) 0.9px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      7px 0.9px at 62px 41px,
+      color-mix(in srgb, var(--stillwater-text) 95%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      0.9px 7px at 62px 41px,
+      color-mix(in srgb, var(--stillwater-text) 95%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      circle at 160px 36px,
+      color-mix(in srgb, var(--stillwater-warm) 100%, transparent) 0.9px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      7px 0.9px at 160px 36px,
+      color-mix(in srgb, var(--stillwater-warm) 95%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      0.9px 7px at 160px 36px,
+      color-mix(in srgb, var(--stillwater-warm) 95%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      circle at 246px 26px,
+      color-mix(in srgb, var(--stillwater-text) 100%, transparent) 0.9px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      7px 0.9px at 246px 26px,
+      color-mix(in srgb, var(--stillwater-text) 95%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      0.9px 7px at 246px 26px,
+      color-mix(in srgb, var(--stillwater-text) 95%, transparent),
+      transparent
+    );
+}
+.dark [data-slot="sidebar-inner"] {
+  background-color: var(--ob-bar) !important;
+  background-image: var(--ob-stars) !important;
+  background-size: 288px 96px !important;
+  background-repeat: repeat-x !important;
+  background-position: 0 0 !important;
+  position: relative;
+  isolation: isolate;
+}
+.dark [data-slot="sidebar-inner"]::before,
+.dark [data-slot="sidebar-inner"]::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 112px;
+  z-index: -1;
+  pointer-events: none;
+}
+.dark [data-slot="sidebar-inner"]::before {
+  background:
+    radial-gradient(
+      55% 80px at 92% 0,
+      color-mix(in srgb, var(--stillwater-warm) 16%, transparent),
+      transparent 75%
+    ),
+    radial-gradient(
+      50% 72px at 6% 0,
+      color-mix(in srgb, var(--stillwater-accent) 18%, transparent),
+      transparent 75%
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--stillwater-accent-deep) 38%, transparent),
+      color-mix(in srgb, var(--stillwater-accent-deep) 14%, transparent) 50%,
+      transparent 100%
+    );
+}
+.dark [data-slot="sidebar-inner"]::after {
+  background-image: var(--ob-twinkle);
+  background-size: 288px 96px;
+  background-repeat: repeat-x;
+  animation: ob-twinkle 4.8s ease-in-out infinite alternate;
+}
+@keyframes ob-twinkle {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dark [data-slot="sidebar-inner"]::after {
+    animation: none;
+    opacity: 0.85;
+  }
+}
+[data-slot="sidebar-inner"] [data-environment-identification="pill"],
+[data-slot="sidebar-inner"] div:has(> [data-environment-identification="pill"]:only-child) {
+  display: none !important;
+}
+[data-workspace-titlebar-controls] {
+  height: env(titlebar-area-height, var(--workspace-topbar-height)) !important;
+}
+[data-workspace-titlebar-controls] svg.lucide {
+  stroke-width: 1.5;
+  translate: -0.5px -0.5px;
+}
+[data-chat-header] {
+  background: transparent !important;
+  border-color: transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+[data-slot="composer-host"],
+[data-thread-details-card],
+[data-user-message-bubble] {
+  background: var(--ob-glass) !important;
+  border: 1px solid var(--ob-edge) !important;
+  border-radius: var(--ob-card-radius) !important;
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: var(--ob-shadow) !important;
+}
+[data-slot="composer-host"]:focus-within {
+  border-color: var(--ob-focus) !important;
+}
+[data-slot="composer-host"]:has([data-pending-user-input-toggle]) {
+  background: transparent !important;
+  border-color: transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+[data-slot="composer-host"]:has([data-pending-user-input-toggle]):focus-within
+  [data-chat-composer-main-surface]::after {
+  border-color: var(--ob-focus) !important;
+}
+[data-slot="composer-shell"]::before {
+  border-radius: var(--ob-card-radius) !important;
+}
+[data-slot="composer-host"]::after,
+[data-chat-composer-main-surface],
+[data-chat-composer-main-surface]::after {
+  border-radius: calc(var(--ob-card-radius) - 1px) !important;
+}
+[data-chat-composer-surface] {
+  border-radius: calc(var(--ob-card-radius) - 2px) !important;
+}
+[data-thread-item] > [aria-current="page"] {
+  box-shadow:
+    var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000),
+    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--ob-shadow) !important;
+}
+[data-thread-item]:has(> [aria-current="page"]) {
+  content-visibility: visible !important;
+  position: relative;
+  z-index: 1;
+}
+[data-slot="sidebar-inset"] {
+  --ob-card-gap: max(4px, var(--desktop-window-right-resize-inset, 0px));
+  --ob-card-gap-right: calc(var(--ob-card-gap) - var(--desktop-window-right-resize-inset, 0px));
+}
+[data-workspace-area="panel"][data-preview-panel-mode="inline"] {
+  margin: var(--workspace-topbar-height) var(--ob-card-gap-right) var(--ob-card-gap) 8px !important;
+  height: calc(100% - var(--workspace-topbar-height) - var(--ob-card-gap)) !important;
+  align-self: flex-end !important;
+  overflow: hidden;
+  background: var(--ob-glass) !important;
+  border: 1px solid var(--ob-edge) !important;
+  border-radius: var(--ob-card-radius) !important;
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: inset 0 1px 0 var(--ob-shine) !important;
+}
+[data-preview-panel-mode="inline"]
+  [data-right-panel-surface-content]
+  .bg-background:not(.sticky, .absolute, .fixed) {
+  background: transparent !important;
+}
+[data-thread-item]:has(.lucide-pin) > [role="button"]:not([aria-current="page"]) {
+  background: var(--ob-glass) !important;
+  box-shadow:
+    inset 0 0 0 1px var(--ob-edge),
+    inset 0 1px 0 var(--ob-shine) !important;
+}
+.chat-markdown code[data-inline-code] {
+  background: color-mix(in srgb, var(--stillwater-accent) 12%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--stillwater-accent) 22%, transparent) !important;
+  border-radius: 5px !important;
+  color: var(--foreground) !important;
+}
+div:has(> [data-thread-terminal-drawer][data-terminal-owner="drawer"]) {
+  padding: 8px var(--ob-card-gap-right) var(--ob-card-gap) var(--ob-card-gap);
+}
+[data-thread-terminal-drawer][data-terminal-owner="drawer"] {
+  border: 1px solid var(--ob-edge) !important;
+  border-radius: var(--ob-card-radius) !important;
+  box-shadow: inset 0 1px 0 var(--ob-shine) !important;
+}
+.chat-markdown-codeblock {
+  border: 1px solid var(--ob-edge) !important;
+  border-radius: 8px !important;
+  background: var(--ob-well) !important;
+  box-shadow:
+    inset 0 2px 3px rgb(0 0 0 / 0.2),
+    inset 0 -1px 0 var(--ob-shine);
+}
+[data-thread-item] {
+  border-radius: 8px !important;
+}
+[data-slot="button"] {
+  border-radius: 6px !important;
+}
+[data-slot="input"],
+[data-slot="select-trigger"] {
+  border-radius: 8px !important;
+}
+[data-slot="dialog-popup"].dialog-glass {
+  background: var(--ob-sheet) !important;
+  border: 1px solid var(--ob-edge) !important;
+  border-radius: var(--ob-sheet-radius) !important;
+  backdrop-filter: blur(28px) saturate(120%);
+  box-shadow:
+    0 30px 80px rgb(0 0 0 / 0.45),
+    0 0 0 1px var(--ob-halo),
+    inset 0 1px 0 var(--ob-shine) !important;
+}
+[data-slot="dialog-popup"]:not(.dialog-glass) > [data-slot="button"][aria-label^="Back"] {
+  background: var(--ob-glass) !important;
+  border-color: var(--ob-edge) !important;
+  border-radius: 8px !important;
+  color: var(--foreground) !important;
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: var(--ob-shadow) !important;
+}
+[data-slot="dialog-popup"]:not(.dialog-glass)
+  > [data-slot="button"][aria-label^="Back"]:is(:hover, [data-pressed]) {
+  background: var(--ob-sheet) !important;
+}
+[data-slot="dialog-popup"]:not(.dialog-glass)
+  > [data-slot="button"][aria-label^="Back"]:focus-visible {
+  border-color: var(--ob-focus) !important;
+}
+[data-slot="popover-popup"],
+[data-slot="menu-popup"] {
+  background: var(--ob-menu) !important;
+  border: 1px solid var(--ob-edge) !important;
+  border-radius: 8px !important;
+  backdrop-filter: blur(28px) saturate(120%);
+  box-shadow:
+    0 25px 50px -12px rgb(0 0 0 / 0.25),
+    inset 0 1px 0 var(--ob-shine) !important;
+}
+[data-slot="popover-popup"]:has([data-thread-details-panel="popover"]) {
+  background: transparent !important;
+  border-color: transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+[data-slot="tooltip-popup"] {
+  background: var(--ob-menu) !important;
+  border: 1px solid var(--ob-edge) !important;
+  border-radius: 4px !important;
+  box-shadow: var(--ob-shadow) !important;
+}
+svg.lucide {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+:root {
+  --ob-tick: var(--stillwater-text-muted);
+  --ob-tick-active: var(--stillwater-accent);
+}
+[data-slot="composer-host"]:has([data-composer-banner-surface="attached"]):focus-within
+  [data-chat-composer-main-surface]::after {
+  border-color: var(--ob-focus) !important;
+}
+.composer-tiptap {
+  caret-color: var(--stillwater-accent);
+}
+[data-slot="dialog-popup"]:not(.dialog-glass) > [data-slot="button"][aria-label^="Back"] {
+  border-radius: 3px !important;
+}

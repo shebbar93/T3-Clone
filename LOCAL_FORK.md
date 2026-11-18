@@ -81,6 +81,8 @@ Upstream keeps custom CSS inside each theme. There is no CSS that applies to all
 | Built-in palettes from `apps/web/src/themePalette.ts` (T3 Code, T3 Chat, Grove, Ocean, Ember, Iris) | `<name>-videorc.json`, shown as "&lt;Name&gt; Videorc"                                                        |
 | `local-fork/themes/custom/*.json` (your custom themes, exported from the app)                       | `<name>-videorc.json`, shown as "&lt;Name&gt; Videorc". The original custom theme in the app does not change. |
 | `local-fork/themes/environment/*.json` (environment themes, such as Carbonfox)                      | The same file name. The CSS is added in place.                                                                |
+| `local-fork/themes/environment/<id>.css` (optional)                                                 | Added to the CSS of `<id>.json`, after the Videorc CSS.                                                       |
+| `local-fork/drafting.css`                                                                           | Added to each environment theme whose id ends with `-drafting`, after `<id>.css`.                             |
 
 The output depends only on the files in git, so the same commit always gives the same files. `themes` shows each file as `ADD`, `UPDATE`, `SAME`, or `REMOVE`, and exits with code 2 if a change is waiting. `~/.t3/userdata/themes/.videorc-manifest` lists the files that the script owns. If you remove an input, `--apply` removes its file. It shows other files in the folder as `OTHER` and does not change them.
 
@@ -115,12 +117,28 @@ To remove a custom theme from the Videorc set, delete its file from `local-fork/
 2. Run `scripts/local-fork.sh themes`, then `scripts/local-fork.sh themes --apply`.
 3. Commit the file.
 
+Optional: put CSS for only this theme in `local-fork/themes/environment/<id>.css`. The script adds it after the Videorc CSS. If both set the same property, this file is used.
+
+A theme id that ends with `-drafting` (Stillwater Drafting, Carbonfox Drafting) also gets `local-fork/drafting.css`: sharp corners, corner ticks, square icons, and the [Quicksilver](https://github.com/kristianbonnici/t3-quicksilver-theme) (MIT) composer edge. The edge is still metal when the thread is idle. A wave moves on it only while the agent works. Reduce Motion stops the wave.
+
+`scripts/local-fork.sh selectors` does not check `drafting.css`. After a merge, also check these in a Drafting theme:
+
+| Look                                             | Depends on                                                                                                                       |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| 3px corners on Tailwind `rounded-xl` and larger  | `--radius-xl`, `--radius-2xl`, `--radius-3xl`, `--control-radius`, and the `.rounded-xl`, `.rounded-2xl`, `.rounded-3xl` classes |
+| Wave only while the agent works                  | Composer button labels `Stop generation`, `Stopping`, `Queue message`, `Steer message` in `ComposerPrimaryActions.tsx`           |
+| Edge on the input area when a banner is attached | `[data-composer-banner-surface="attached"]` inside `composer-host`; `data-chat-composer-main-surface`                            |
+| Banner corners                                   | `[data-composer-banner-surface]::before`, `composer-banner-attachment` slot                                                      |
+| Corner ticks                                     | `[data-user-message-bubble]`, `[data-thread-item] [data-sidebar-row][aria-current="page"]`                                       |
+
+The Quicksilver edge runs only in dark mode. Quicksilver has no light version.
+
 To change the palette of an environment theme, change its file in `local-fork/themes/environment/`, not in `~/.t3/userdata/themes/`. The next `--apply` writes over the file in `~/.t3/userdata/themes/`.
 
 ### Use a theme
 
 1. In the app, go to **Settings > Appearance**.
-2. Select a theme with "Videorc" in its name, or Carbonfox.
+2. Select a theme with "Videorc" in its name, or Carbonfox, Carbonfox Drafting, or Stillwater Drafting.
 3. Do not click **Duplicate** on a Videorc theme. A copy does not get later changes from `--apply`.
 
 ### Undo
