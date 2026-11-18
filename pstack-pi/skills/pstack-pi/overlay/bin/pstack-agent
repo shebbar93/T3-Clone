@@ -1,0 +1,646 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+
+pi_cmd() {
+  if [ -n "${PSTACK_PI_CMD:-}" ]; then echo "$PSTACK_PI_CMD"; return; fi
+  local backend
+  backend=$(backend)
+  case "$1" in
+    sol) echo "pisol61${backend}" ;;
+    luna) echo "piluna" ;;
+    haiku|sonnet|opus) echo "pi${1}55${backend}" ;;
+    *) die "bad --model: '$1' (haiku|sonnet|opus|sol|luna)" ;;
+  esac
+}
+REX_NS=""
+[ -n "${REX_BLOCK:-}" ] && REX_NS="rex-${REX_BLOCK##*-}"
+T3_NS=""
+[ -n "${T3CODE_CLI_PATH:-}" ] && [ -n "${PI_SESSION_ID:-}" ] && T3_NS="t3-${PI_SESSION_ID##*-}"
+NS=$(printf %s "${PSTACK_NS:-${HERDR_PANE_ID:-${REX_NS:-${T3_NS:-main}}}}" | tr -c 'A-Za-z0-9._-' '-')
+ROOT="${PSTACK_RUN_DIR:-${TMPDIR:-/tmp}}"
+ROOT="${ROOT%/}/pstack"
+RUN_DIR="$ROOT/$NS"
+SESSIONS="${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/sessions"
+PSTACK="${PSTACK:-$HOME/.pi/agent/vendor/cursor-plugins/pstack}"
+OVERLAY="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+GUARD="${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/extensions/pstack-guard.ts"
+GRACE=90
+
+usage() {
+  cat <<'EOF'
+pstack-agent spawn  <label> <prompt-file> [--escalate] [--readonly] [--cwd <dir>]
+                    [--skill <pstack-skill>] [--role poteto-agent|comment-sicko] [--worker]
+pstack-agent wait   <label>[@<id>]... [--timeout <seconds>]
+pstack-agent resume <label> <text>
+pstack-agent clean  [<label>...]
+pstack-agent upstream-check
+pstack-agent smoke  <pstack-skill>
+
+spawn   Start one pi subagent in its own herdr tab, Rex window, or T3
+        Code thread "pstack:<ns>:<label>". Without a mux, it runs in
+        the background. The route picks the model (see Models).
+        Refuses an empty
+        brief or a brief whose last line is a heading or ends in ":".
+        --skill, --role, and --worker add the overlay, skill, role,
+        and worker.md lines in front of the brief. --skill reflect
+        also adds $PI_SESSION_FILE as the transcript. --role
+        poteto-agent also adds the overlay line and the path of the
+        poteto-mode SKILL.md.
+        Prints "run: <label>@<id>".
+wait    Block until each label finishes, then print each result.
+        With <label>@<id>, a result from another run is refused.
+        Exit 1 if a label times out, fails, or exits without a result.
+resume  Send one more prompt to a finished subagent, in the same tab or
+        window and session, on the same model. Prints a new run.
+clean   Close the named labels (all labels of this caller if none),
+        their nested subagents, and delete their run files.
+        Session files stay in the pi session store.
+upstream-check
+        Fetch upstream. Exit 1 when the vendor HEAD is not the pin in
+        UPSTREAM, an overlay path is missing in $PSTACK, or an
+        incoming upstream change removes a path that the overlay uses.
+smoke   Spawn a readonly subagent with --skill <pstack-skill>. Pass
+        only if it read the skill's SKILL.md and returned a result.
+
+Labels: [A-Za-z0-9][A-Za-z0-9._-]*
+Models: fixed route per label: haiku, then sonnet, then sol.
+        A spawn starts on haiku. It moves one step up when you pass
+        --escalate, or when the last wait of that label failed (timeout,
+        exit, error, length, aborted). After sol, spawn refuses: the
+        parent takes the task back. clean with no labels resets it.
+        Pinned, no escalation: interrogate-a|b|c run opus,
+        interrogate-d runs sol.
+        haiku and sonnet run the ~/.zshrc alias pi<m>55<backend>, sol
+        runs pisol61<backend>. backend: copilot if the parent pi uses
+        github-copilot, else aperture. --model is refused.
+Env: PSTACK_BACKEND (aperture|copilot, overrides the detection),
+     PSTACK_PI_CMD (overrides the routed model with one command),
+     PSTACK_T3_MODEL (T3 only: overrides the routed model with one pi model
+     slug, such as aperture/claude-opus-5-5),
+     PSTACK_NS (caller namespace, default $HERDR_PANE_ID, else
+     rex-<last part of $REX_BLOCK>, else t3-<last part of
+     $PI_SESSION_ID>), PSTACK_RUN_DIR
+Mux: herdr when HERDR_ENV=1, else Rex when REX_SESSION is set and rex
+     is on PATH, else T3 Code when T3CODE_CLI_PATH is set, else
+     background.
+EOF
+}
+
+die() { echo "pstack-agent: $*" >&2; exit 2; }
+
+check_label() {
+  [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || die "bad label: '$1'"
+}
+
+check_brief() {
+  local lines last
+  lines=$(grep -c '[^[:space:]]' "$1" || true)
+  [ "$lines" -gt 0 ] || die "empty brief: $1"
+  last=$(grep '[^[:space:]]' "$1" | tail -n 1)
+  last="${last%"${last##*[![:space:]]}"}"
+  case "$last" in
+    \#*|*:) die "brief looks cut off ($lines lines). Last line: '$last'. File: $1" ;;
+  esac
+  echo "$lines"
+}
+
+frontmatter_body() {
+  awk 'NR==1 && /^---[[:space:]]*$/ {f=1; next} f && /^---[[:space:]]*$/ {f=0; next} !f' "$1"
+}
+
+compose_prompt() {
+  local brief="$1" skill="$2" role="$3" worker="$4"
+  [ "$worker" = 0 ] || printf 'Read %s before anything else.\n' "$PSTACK/skills/poteto-mode/worker.md"
+  if [ -n "$skill" ] || [ "$role" = poteto-agent ]; then
+    printf 'Read %s first.\n' "$OVERLAY/SKILL.md"
+  fi
+  [ "$role" != poteto-agent ] || printf 'The poteto-mode skill file is %s.\n' "$PSTACK/skills/poteto-mode/SKILL.md"
+  if [ -n "$skill" ]; then
+    printf 'Then read %s and follow it.\n' "$PSTACK/skills/$skill/SKILL.md"
+    printf 'You are the %s subagent. Do the work of the skill yourself. A rule that tells the parent to spawn a subagent for %s does not apply to you.\n' "$skill" "$skill"
+  fi
+  [ "$skill" != reflect ] || printf 'Transcript to reflect on: %s\n' "$PI_SESSION_FILE"
+  printf '\n'
+  [ -z "$role" ] || { frontmatter_body "$PSTACK/agents/$role.md"; printf '\n'; }
+  cat "$brief"
+}
+
+new_run() {
+  uuidgen | tr 'A-Z' 'a-z' > "$1/turn"
+  echo "run: $(basename "$1")@$(cat "$1/turn")"
+}
+
+LADDER=(haiku sonnet sol)
+
+pinned() {
+  case "$1" in
+    interrogate-a|interrogate-b|interrogate-c) echo opus ;;
+    interrogate-d) echo sol ;;
+  esac
+}
+
+route() {
+  local label="$1" escalate="$2" f="$RUN_DIR/.route/$1" prev="" next=0
+  [ -f "$f" ] && prev=$(cat "$f")
+  if [ "$escalate" = 1 ] || [ -f "$f.failed" ]; then
+    [ -n "$prev" ] || die "nothing to escalate: '$label' has no earlier run in namespace $NS"
+    next=$((prev + 1))
+    [ "$next" -lt ${#LADDER[@]} ] || die "route: '$label' failed on every step (${LADDER[*]}). The parent takes the task back."
+  fi
+  mkdir -p "$RUN_DIR/.route"
+  echo "$next" > "$f"
+  rm -f "$f.failed"
+  echo "$next"
+}
+
+mark_route() {
+  [ -f "$RUN_DIR/.route/$1" ] || return 0
+  case "$2" in
+    stop) rm -f "$RUN_DIR/.route/$1.failed" ;;
+    waiting|replaced) ;;
+    *) touch "$RUN_DIR/.route/$1.failed" ;;
+  esac
+}
+
+in_herdr() { [ "${HERDR_ENV:-}" = 1 ]; }
+
+in_rex() { ! in_herdr && [ -n "${REX_SESSION:-}" ] && command -v rex > /dev/null 2>&1; }
+
+in_t3() { ! in_herdr && ! in_rex && [ -n "${T3CODE_CLI_PATH:-}" ] && [ -x "$T3CODE_CLI_PATH" ]; }
+
+t3() { "$T3CODE_CLI_PATH" "$@"; }
+
+backend() {
+  local b="${PSTACK_BACKEND:-}"
+  if [ -z "$b" ]; then
+    case "${PI_PROVIDER:-}" in
+      github-copilot) b=copilot ;;
+      *) b=aperture ;;
+    esac
+  fi
+  case "$b" in aperture|copilot) ;; *) die "bad PSTACK_BACKEND: '$b' (aperture|copilot)" ;; esac
+  echo "$b"
+}
+
+t3_model() {
+  if [ -n "${PSTACK_T3_MODEL:-}" ]; then echo "$PSTACK_T3_MODEL"; return; fi
+  local b
+  b=$(backend)
+  case "$b:$1" in
+    *:luna) echo "github-copilot/gpt-6-luna" ;;
+    aperture:sol) echo "azure/gpt-6.1-sol" ;;
+    aperture:haiku|aperture:sonnet|aperture:opus) echo "aperture/claude-$1-5-5" ;;
+    copilot:sol) echo "github-copilot/gpt-6.1-sol" ;;
+    copilot:haiku|copilot:sonnet|copilot:opus) echo "github-copilot/claude-$1-5.5" ;;
+    *) die "bad --model: '$1' (haiku|sonnet|opus|sol|luna)" ;;
+  esac
+}
+
+json_field() {
+  python3 -c 'import sys,json
+o=json.load(sys.stdin)
+for k in sys.argv[1].split("."): o=o[k]
+print(o)' "$1"
+}
+
+t3_spawn() {
+  local dir="$1" cwd="$2" label="$3" model="$4" out
+  if ! t3 thread list --project "$cwd" --json > /dev/null 2>&1; then
+    out=$(t3 project add --title "pstack:$NS:$label" "$cwd" 2>&1) || die "t3 project add failed: $out"
+    awk '/^Added project/{print $3; exit}' <<< "$out" > "$dir/project"
+  fi
+  {
+    cat "$dir/system.md"
+    printf -- '- Your working directory is %s. Run every command there.\n' "$cwd"
+    [ -f "$dir/readonly" ] || printf -- '- To start nested subagents, run pstack-agent as: PSTACK_NS=%s pstack-agent ...\n' "$NS.$label"
+    printf '\n---\n\n'
+    cat "$dir/prompt.md"
+    printf '\n\n---\n\nDo the task in the brief above. Return only the requested output.\n'
+  } > "$dir/t3msg.md"
+  out=$(t3 thread start --json --title "pstack:$NS:$label" --provider pi --model "$model" "$cwd" - < "$dir/t3msg.md" 2>&1) ||
+    die "t3 thread start failed: $out"
+  json_field threadId <<< "$out" > "$dir/thread"
+  json_field runId <<< "$out" > "$dir/run"
+  t3 thread show --json --messages 1 "$(cat "$dir/thread")" 2>/dev/null | json_field thread.link > "$dir/link" 2>/dev/null || true
+}
+
+rex_type() {
+  rex send -s "$REX_SESSION" -b "$1" "$2" > /dev/null &&
+    rex send-key -s "$REX_SESSION" -b "$1" enter > /dev/null
+}
+
+rex_prompt() {
+  python3 -c 'import sys,json; print(json.dumps({"session_id":sys.argv[1],"block_id":sys.argv[2],"event":{"type":"paste","payload":{"text":sys.argv[3]}}}))' \
+    "$REX_SESSION" "$1" "$2" | rex api call -s "$REX_SESSION" block.event - > /dev/null &&
+    rex send-key -s "$REX_SESSION" -b "$1" enter > /dev/null
+}
+
+tab_ids() {
+  if in_herdr; then
+    herdr tab list --workspace "$HERDR_WORKSPACE_ID" | own_tabs herdr "$@"
+  else
+    rex window ls -s "$REX_SESSION" --json | own_tabs rex "$@"
+  fi
+}
+
+close_tab() {
+  if in_herdr; then
+    herdr tab close "$1" > /dev/null 2>&1 || true
+  else
+    rex window close -s "$REX_SESSION" "$1" > /dev/null 2>&1 || true
+  fi
+}
+
+own_tabs() {
+  python3 -c 'import sys,json
+mux,ns,labels=sys.argv[1],sys.argv[2],sys.argv[3:]
+d=json.load(sys.stdin)
+tabs,key=(d["result"]["tabs"],"tab_id") if mux=="herdr" else (d["windows"],"window_id")
+for t in tabs:
+    l=t.get("label","")
+    if not l.startswith("pstack:") or l.count(":")<2: continue
+    owner,label=l[7:].rsplit(":",1)
+    if labels:
+        hit=(owner==ns and label in labels) or any(owner==ns+"."+x or owner.startswith(ns+"."+x+".") for x in labels)
+    else:
+        hit=owner==ns or owner.startswith(ns+".")
+    if hit: print(t[key])' "$1" "$NS" "${@:2}"
+}
+
+kill_tree() {
+  local c
+  for c in $(pgrep -P "$1" 2>/dev/null); do kill_tree "$c"; done
+  kill "$1" 2>/dev/null || true
+}
+
+write_run() {
+  local dir="$1" out="$2" session_flags="$3" message="$4"
+  local cwd mode="" tools=""
+  cwd=$(cat "$dir/cwd")
+  in_herdr || in_rex || mode="-p"
+  [ -f "$dir/readonly" ] && tools="--exclude-tools edit,write"
+  local cmd
+  cmd=$(cat "$dir/cmd")
+  cat > "$out" <<EOF
+cd $(printf %q "$cwd") || { echo 1 > $(printf %q "$dir/exit"); exit 1; }
+export PSTACK_NS=$(printf %q "$NS.$(basename "$dir")")
+zsh -ic $(printf %q "$cmd \"\$@\"") pstack $mode $session_flags --approve $tools \\
+  --append-system-prompt $(printf %q "$dir/system.md") $message
+echo \$? > $(printf %q "$dir/exit")
+EOF
+}
+
+launch() {
+  local dir="$1" script="$2" label
+  label=$(basename "$dir")
+  rm -f "$dir/exit"
+  if in_herdr; then
+    herdr pane run "$(cat "$dir/pane")" "bash $(printf %q "$script")"
+  elif in_rex; then
+    rex_type "$(cat "$dir/block")" "bash $(printf %q "$script")"
+  else
+    nohup bash "$script" > /dev/null 2>> "$dir/err.log" < /dev/null &
+    echo $! > "$dir/pid"
+  fi
+}
+
+spawn() {
+  local label="$1" prompt="$2"; shift 2
+  local ro=0 cwd="$PWD" model escalate=0 step="" cmd skill="" role="" worker=0 lines
+  check_label "$label"
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --readonly) ro=1 ;;
+      --escalate) escalate=1 ;;
+      --model) die "--model is refused: the route picks the model (haiku, then sonnet, then sol). After a weak result, spawn again with --escalate." ;;
+      --cwd) [ $# -ge 2 ] || die "--cwd needs a dir"; cwd="$2"; shift ;;
+      --skill) [ $# -ge 2 ] || die "--skill needs a pstack skill name"; skill="$2"; shift ;;
+      --role) [ $# -ge 2 ] || die "--role needs poteto-agent|comment-sicko"; role="$2"; shift ;;
+      --worker) worker=1 ;;
+      *) die "unknown flag: $1" ;;
+    esac
+    shift
+  done
+  [ -f "$prompt" ] || die "no prompt file: $prompt"
+  lines=$(check_brief "$prompt")
+  if [ -n "$skill" ]; then
+    [[ "$skill" =~ ^[a-z0-9-]+$ ]] && [ -f "$PSTACK/skills/$skill/SKILL.md" ] || die "no pstack skill: '$skill'"
+  fi
+  case "$role" in ""|poteto-agent|comment-sicko) ;; *) die "bad --role: '$role' (poteto-agent|comment-sicko)" ;; esac
+  if [ "$skill" = reflect ]; then
+    [ -f "${PI_SESSION_FILE:-}" ] || die "--skill reflect needs PI_SESSION_FILE"
+  fi
+  cwd=$(cd "$cwd" 2>/dev/null && pwd) || die "no such dir: $cwd"
+  model=$(pinned "$label")
+  if [ -n "$model" ]; then
+    [ "$escalate" = 0 ] || die "'$label' is pinned to $model and does not escalate. The parent takes the task back."
+  else
+    step=$(route "$label" "$escalate")
+    model="${LADDER[$step]}"
+  fi
+  if in_t3; then cmd=$(t3_model "$model"); else cmd=$(pi_cmd "$model"); fi
+
+  local dir="$RUN_DIR/$label"
+  [ -d "$dir" ] && clean "$label" > /dev/null
+  mkdir -p "$dir"
+  compose_prompt "$prompt" "$skill" "$role" "$worker" > "$dir/prompt.md"
+  echo "$cwd" > "$dir/cwd"
+  echo "$cmd" > "$dir/cmd"
+  uuidgen | tr 'A-Z' 'a-z' > "$dir/id"
+  cat > "$dir/system.md" <<'EOF'
+You are a pstack subagent. A parent agent reads your last message. No human answers you.
+- Ignore reply-format rules in AGENTS.md that are for the human user: brevity limits, the "Branch:" line, "one next action". Return the output that the brief asks for, in the format it asks for.
+- Do not ask questions. Choose the safest default, state it in one line, and continue.
+- The brief overrides AGENTS.md rules about when to write tests or code.
+EOF
+  if [ "$ro" = 1 ]; then
+    touch "$dir/readonly"
+    printf -- '- You are readonly. Do not create, change, or delete files. Use bash only for commands that read. Do not run pstack-agent.\n' >> "$dir/system.md"
+  fi
+
+  write_run "$dir" "$dir/run.sh" "--session-id $(cat "$dir/id") --name $(printf %q "pstack:$NS:$label")" \
+    "@$(printf %q "$dir/prompt.md") \"Do the task in the attached prompt file. Return only the requested output.\""
+
+  if in_herdr; then
+    herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$cwd" --label "pstack:$NS:$label" --no-focus |
+      python3 -c 'import sys,json; print(json.load(sys.stdin)["result"]["root_pane"]["pane_id"])' > "$dir/pane"
+    launch "$dir" "$dir/run.sh"
+    echo "spawned $label in herdr tab pstack:$NS:$label ($cmd, brief $lines lines)"
+  elif in_rex; then
+    rex window new -s "$REX_SESSION" "pstack:$NS:$label" -c "$cwd" --focus=false --json |
+      python3 -c 'import sys,json; print(json.load(sys.stdin)["block_ids"][0])' > "$dir/block"
+    launch "$dir" "$dir/run.sh"
+    echo "spawned $label in rex window pstack:$NS:$label ($cmd, brief $lines lines)"
+  elif in_t3; then
+    t3_spawn "$dir" "$cwd" "$label" "$cmd"
+    echo "spawned $label in T3 thread pstack:$NS:$label ($cmd, brief $lines lines) $(cat "$dir/link" 2>/dev/null)"
+  else
+    launch "$dir" "$dir/run.sh"
+    echo "spawned $label in background ($cmd, brief $lines lines)"
+  fi
+  if [ -n "$step" ]; then
+    echo "route: $model (step $((step + 1)) of ${#LADDER[@]}: ${LADDER[*]})"
+  else
+    echo "route: $model (pinned)"
+  fi
+  new_run "$dir"
+}
+
+STATE_PY='
+import sys,json,glob,os
+d,root=sys.argv[1],sys.argv[2]
+since=int(open(os.path.join(d,"since")).read()) if os.path.exists(os.path.join(d,"since")) else 0
+sid=open(os.path.join(d,"id")).read().strip()
+files=glob.glob(os.path.join(root,"*","*_"+sid+".jsonl"))
+if not files: print("none"); sys.exit()
+open(os.path.join(d,"session"),"w").write(files[0])
+last=None
+for i,l in enumerate(open(files[0])):
+    if i<since: continue
+    try: o=json.loads(l)
+    except Exception: continue
+    if o.get("type")=="message": last=o["message"]
+if not last or last.get("role")!="assistant": print("running"); sys.exit()
+r=last.get("stopReason")
+if r not in ("stop","length","aborted","error"): print("running"); sys.exit()
+c=last.get("content") or ""
+t=c if isinstance(c,str) else "".join(x.get("text","") for x in c if x.get("type")=="text")
+if r!="stop" and last.get("errorMessage"): t+="\n\n[errorMessage] "+last["errorMessage"]
+open(os.path.join(d,"out.md"),"w").write(t)
+print(r)
+'
+
+T3_STATE_PY='
+import sys,json,os,subprocess
+d,cli=sys.argv[1],sys.argv[2]
+rd=lambda n: open(os.path.join(d,n)).read().strip()
+rid=rd("run")
+ord_=lambda r: int(r.rsplit(":",1)[-1]) if r and r.rsplit(":",1)[-1].isdigit() else -1
+p=subprocess.run([cli,"thread","show","--json","--messages","20",rd("thread")],capture_output=True,text=True)
+if p.returncode: print("running"); sys.exit()
+o=json.loads(p.stdout); t=o["thread"]
+if t.get("activeRunId") or ord_(t.get("latestRunId") or "")<ord_(rid):
+    if t.get("pendingRequestCount"):
+        open(os.path.join(d,"out.md"),"w").write("The T3 thread waits for an answer: "+t.get("link","")+"\n")
+        print("waiting"); sys.exit()
+    print("running"); sys.exit()
+st=t.get("status") or "unknown"
+lr=t.get("latestRunId")
+msgs=[m for m in o.get("messages",[]) if m.get("role")=="assistant" and m.get("runId")==lr]
+txt=msgs[-1].get("text","") if msgs else ""
+if st!="completed": txt+="\n\n[T3 status] "+st+" "+t.get("link","")
+open(os.path.join(d,"out.md"),"w").write(txt)
+print("stop" if st=="completed" else st)
+'
+
+dead_reason() {
+  local dir="$1"
+  {
+    echo "Subagent process ended (exit $(cat "$dir/exit")) before a final result."
+    if [ -s "$dir/err.log" ]; then tail -n 20 "$dir/err.log"; fi
+    if [ -f "$dir/pane" ] && in_herdr; then
+      herdr pane read "$(cat "$dir/pane")" --source recent --lines 20 2>/dev/null || true
+    elif [ -f "$dir/block" ] && in_rex; then
+      rex capture -s "$REX_SESSION" -b "$(cat "$dir/block")" --trim 2>/dev/null | tail -n 20 || true
+    fi
+  } > "$dir/out.md"
+}
+
+wait_all() {
+  local timeout=3600 labels=() turns=() rc=0
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --timeout) [[ "${2:-}" =~ ^[0-9]+$ ]] || die "--timeout needs seconds"; timeout="$2"; shift ;;
+      *@*) check_label "${1%%@*}"; labels+=("${1%%@*}"); turns+=("${1#*@}") ;;
+      *) check_label "$1"; labels+=("$1"); turns+=("") ;;
+    esac
+    shift
+  done
+  [ ${#labels[@]} -gt 0 ] || { usage; exit 2; }
+  local i
+  for i in "${!labels[@]}"; do
+    [ -n "${turns[$i]}" ] || [ -d "$RUN_DIR/${labels[$i]}" ] || die "unknown label: ${labels[$i]} (namespace $NS)"
+  done
+
+  local start=$SECONDS
+  for i in "${!labels[@]}"; do
+    local label="${labels[$i]}" turn="${turns[$i]}"
+    local dir="$RUN_DIR/$label" state="" bad_since=""
+    while :; do
+      if [ -n "$turn" ] && [ "$(cat "$dir/turn" 2>/dev/null)" != "$turn" ]; then
+        state="replaced"
+        echo "===== $label: run $turn is gone. A clean, spawn, or resume replaced it. ====="
+        mark_route "$label" replaced
+        rc=1; continue 2
+      fi
+      if [ -f "$dir/thread" ]; then
+        state=$(python3 -c "$T3_STATE_PY" "$dir" "$T3CODE_CLI_PATH")
+        [ "$state" = running ] || break
+      else
+        state=$(python3 -c "$STATE_PY" "$dir" "$SESSIONS")
+        case "$state" in
+          stop) break ;;
+          error|length|aborted)
+            [ -f "$dir/exit" ] && break
+            [ -n "$bad_since" ] || bad_since=$SECONDS
+            [ $((SECONDS - bad_since)) -ge "$GRACE" ] && break ;;
+          *)
+            bad_since=""
+            if [ -f "$dir/exit" ]; then state="exited"; dead_reason "$dir"; break; fi ;;
+        esac
+      fi
+      if [ $((SECONDS - start)) -ge "$timeout" ]; then
+        state="timeout"
+        echo "===== $label: TIMEOUT after ${timeout}s =====" ; rc=1; mark_route "$label" timeout; continue 2
+      fi
+      sleep 5
+    done
+    [ "$state" = stop ] || rc=1
+    mark_route "$label" "$state"
+    echo "===== $label ($state) -> $dir/out.md ====="
+    cat "$dir/out.md"
+    echo
+  done
+  return $rc
+}
+
+resume() {
+  local label="$1" text="$2" dir
+  check_label "$label"
+  dir="$RUN_DIR/$label"
+  if [ -f "$dir/thread" ]; then
+    local out
+    rm -f "$dir/out.md"
+    out=$(printf '%s\n' "$text" | t3 thread send --json "$(cat "$dir/thread")" - 2>&1) || die "t3 thread send failed: $out"
+    json_field runId <<< "$out" > "$dir/run"
+    echo "resumed $label."
+    new_run "$dir"
+    return
+  fi
+  [ -f "$dir/session" ] || die "no session for $label. Run wait first."
+  wc -l < "$(cat "$dir/session")" | tr -d ' ' > "$dir/since"
+  rm -f "$dir/out.md"
+  if in_herdr && [ ! -f "$dir/exit" ]; then
+    herdr agent prompt "$(cat "$dir/pane")" "$text" >/dev/null
+  elif in_rex && [ ! -f "$dir/exit" ]; then
+    rex_prompt "$(cat "$dir/block")" "$text"
+  else
+    printf '%s\n' "$text" > "$dir/resume.md"
+    write_run "$dir" "$dir/resume.sh" "--session $(cat "$dir/id")" "@$(printf %q "$dir/resume.md")"
+    launch "$dir" "$dir/resume.sh"
+  fi
+  echo "resumed $label."
+  new_run "$dir"
+}
+
+clean() {
+  local dirs=() l
+  if [ $# -gt 0 ]; then
+    for l in "$@"; do check_label "$l"; dirs+=("$RUN_DIR/$l"); done
+    for l in "$@"; do dirs+=("$ROOT/$NS.$l" "$ROOT/$NS.$l".*); done
+  else
+    dirs=("$RUN_DIR" "$ROOT/$NS".*)
+  fi
+  if in_herdr || in_rex; then
+    for t in $(tab_ids "$@"); do close_tab "$t"; done
+  fi
+  local d
+  for d in "${dirs[@]}"; do
+    [ -e "$d" ] || continue
+    while IFS= read -r p; do kill_tree "$(cat "$p")"; done < <(find "$d" -name pid 2>/dev/null)
+    while IFS= read -r p; do t3 project remove --force "$(cat "$p")" > /dev/null 2>&1 || true; done < <(find "$d" -name project 2>/dev/null)
+    rm -rf "$d"
+  done
+  echo "cleaned"
+}
+
+UPSTREAM_PY='
+import os,re,subprocess,sys
+pstack,overlay,guard=sys.argv[1:4]
+vendor=os.path.dirname(pstack)
+git=lambda *a: subprocess.run(["git","-C",vendor,*a],capture_output=True,text=True,check=True).stdout
+pin=re.search(r"@\s+([0-9a-f]{7,40})",open(os.path.join(os.path.dirname(overlay),"UPSTREAM")).read()).group(1)
+head=git("log","-1","--format=%H","--","pstack").strip()
+files=[os.path.join(overlay,"SKILL.md"),os.path.join(overlay,"HARNESS.md"),os.path.join(overlay,"bin","pstack-agent"),guard]
+for root,_,names in os.walk(os.path.join(overlay,"extras")): files+=[os.path.join(root,n) for n in names]
+texts={f:open(f).read() for f in files if os.path.exists(f)}
+problems=[]
+if not head.startswith(pin): problems.append(f"vendor pstack HEAD {head[:7]} is not the UPSTREAM pin {pin}")
+ref=re.compile(r"(?:\$PSTACK|vendor/cursor-plugins/pstack)/([A-Za-z0-9_./-]+)")
+for f,t in texts.items():
+    for m in ref.finditer(t):
+        p=m.group(1).rstrip(".")
+        if not os.path.exists(os.path.join(pstack,p)): problems.append(f"{f}: $PSTACK/{p} does not exist")
+changes=[l.split("\t") for l in git("diff","--name-status","HEAD","origin/main","--","pstack").splitlines()]
+counts={}
+for c in changes: counts[c[0][0]]=counts.get(c[0][0],0)+1
+print("incoming upstream changes:"," ".join(f"{k}={v}" for k,v in sorted(counts.items())) or "none")
+for c in changes:
+    if c[0][0] not in "DR": continue
+    rel=c[1].removeprefix("pstack/")
+    verb="removes" if c[0][0]=="D" else "renames"
+    terms=[rel]
+    m=re.fullmatch(r"skills/([^/]+)/SKILL\.md",rel)
+    if m: terms.append("### "+m.group(1)+"\n")
+    for f,t in texts.items():
+        for term in terms:
+            if term in t: problems.append(f"{f}: uses {term.strip()!r}, which upstream {verb}")
+for p in sorted(set(problems)): print("STALE",p)
+print("FAIL" if problems else "PASS")
+sys.exit(1 if problems else 0)
+'
+
+upstream_check() {
+  git -C "$(dirname "$PSTACK")" fetch --quiet origin main || die "git fetch failed"
+  python3 -c "$UPSTREAM_PY" "$PSTACK" "$OVERLAY" "$GUARD"
+}
+
+SMOKE_PY='
+import json,sys
+session,out,skill=sys.argv[1:4]
+needle="/"+skill+"/SKILL.md"
+read=False
+for l in open(session):
+    o=json.loads(l)
+    if o.get("type")!="message" or o["message"].get("role")!="assistant": continue
+    for c in o["message"].get("content") or []:
+        if isinstance(c,dict) and c.get("type")=="toolCall" and needle in json.dumps(c.get("arguments")): read=True
+result=open(out).read().strip()
+print("subagent read",needle+":","yes" if read else "no")
+print("result lines:",len(result.splitlines()))
+print("PASS" if read and result else "FAIL")
+sys.exit(0 if read and result else 1)
+'
+
+smoke() {
+  local skill="$1" brief run dir rc=0; shift
+  [ $# -eq 0 ] || die "unknown flag: $1"
+  rm -f "$RUN_DIR/.route/smoke-$skill" "$RUN_DIR/.route/smoke-$skill.failed"
+  brief=$(mktemp "${TMPDIR:-/tmp}/pstack-smoke.XXXXXX")
+  printf '%s\n' "This is a smoke test of the brief. Do not do the steps of the skill." \
+    "Reply with two lines. Line 1: the first heading of the skill file. Line 2: the path of the skill file that you read." > "$brief"
+  run=$(spawn "smoke-$skill" "$brief" --skill "$skill" --readonly | tee /dev/stderr | sed -n 's/^run: //p')
+  rm -f "$brief"
+  [ -n "$run" ] || die "smoke spawn failed"
+  wait_all "$run" --timeout 600 || rc=1
+  dir="$RUN_DIR/smoke-$skill"
+  if [ -f "$dir/session" ] && [ -f "$dir/out.md" ]; then
+    python3 -c "$SMOKE_PY" "$(cat "$dir/session")" "$dir/out.md" "$skill" || rc=1
+  else
+    echo "FAIL: no session or result for smoke-$skill"; rc=1
+  fi
+  clean "smoke-$skill" > /dev/null
+  return $rc
+}
+
+cmd="${1:-}"; shift || true
+case "$cmd" in
+  spawn) [ $# -ge 2 ] || { usage; exit 2; }; spawn "$@" ;;
+  wait) wait_all "$@" ;;
+  resume) [ $# -eq 2 ] || { usage; exit 2; }; resume "$@" ;;
+  clean) clean "$@" ;;
+  upstream-check) [ $# -eq 0 ] || { usage; exit 2; }; upstream_check ;;
+  smoke) [ $# -ge 1 ] || { usage; exit 2; }; smoke "$@" ;;
+  *) usage; exit 2 ;;
+esac
