@@ -24,7 +24,7 @@ In Rex, a tab is a window and a pane is a block. Before you use a `rex` command 
 - A subagent is a T3 thread on provider `pi`. `spawn` prints the thread link. Give the user that link.
 - `--cwd` must be in a T3 project. If it is not (for example, a `/tmp` worktree), `spawn` adds a project `pstack:<ns>:<label>` for it. `clean` removes that project and its threads.
 - `clean` does not close threads in a project that was there before. The user archives them in the T3 sidebar.
-- Models: the route is the same as in herdr and Rex (see Models). `haiku` and `sonnet` are `aperture/claude-<m>-5-5` (or `github-copilot/claude-<m>-5.5`). `sol` is `azure/gpt-6.1-sol` (or `github-copilot/gpt-6.1-sol`). The `azure` entry in `~/.pi/agent/models.json` points to Aperture, so `sol` does not need the alias env vars. The thinking level comes from `modelThinkingLevels` in `~/.pi/agent/settings.json`, with the same levels as the aliases. `PSTACK_T3_MODEL=<provider>/<model>` replaces the routed model for one call.
+- Models: the route is the same as in herdr and Rex (see Models). `haiku`, `sonnet`, and `opus` are `aperture/claude-<m>-5-5` (or `github-copilot/claude-<m>-5.5`). `sol` is `azure/gpt-6.1-sol` (or `github-copilot/gpt-6.1-sol`). The `azure` entry in `~/.pi/agent/models.json` points to Aperture, so `sol` does not need the alias env vars. The thinking level comes from `modelThinkingLevels` in `~/.pi/agent/settings.json`, with the same levels as the aliases. `PSTACK_T3_MODEL=<provider>/<model>` replaces the routed model for one call.
 - `--readonly` is only an instruction in the brief. The T3 CLI cannot remove the `edit` and `write` tools.
 - `wait` reads the thread state with `t3 thread show`. A thread that waits for an answer ends `wait` with state `waiting` and its link.
 - Use `pstack_spawn` for pstack subagents. Do not use `delegate_task` or `t3_thread_launch` for them.
@@ -53,7 +53,7 @@ One subagent = one interactive `pi` session in its own herdr tab or Rex window, 
 
 ### Models
 
-`pstack-agent` picks the model. The caller does not. `pstack_spawn` has no `model` parameter, and `pstack-agent spawn` refuses `--model`. This replaces the `pstack-models.mdc` rule, every model slug in upstream files and agent frontmatter, and every role-to-model table.
+`pstack-agent` picks the model from the seat and the route. The caller does not. `pstack_spawn` has no `model` parameter, and `pstack-agent spawn` refuses `--model`. This replaces the `pstack-models.mdc` rule, every model slug in upstream files and agent frontmatter, and every role-to-model table.
 
 | Step | `model` | Alias | Thinking |
 |---|---|---|---|
@@ -61,9 +61,19 @@ One subagent = one interactive `pi` session in its own herdr tab or Rex window, 
 | 2 | `sonnet` | `pisonnet55<backend>` | `xhigh` |
 | 3 | `sol` | `pisol61<backend>` (GPT-6.1 Sol) | `medium` |
 
+Every `pstack_spawn` must set `seat` (`--seat`). The schema requires it, and `pstack-agent` refuses a spawn without it.
+
+| `seat` | Use it for | Model |
+|---|---|---|
+| `write` | A subagent that changes files: code, docs, repros | route, from `haiku` |
+| `research` | A subagent that reads and answers: `how`, `why`, `recall`, `reflect`, smoke | route, from `haiku` |
+| `review` | A subagent that checks the work of another agent: verifier, `arena-judge`, second opinion, `show-me-your-work` reviewer, `comment-sicko` | `opus` (`piopus55<backend>`), pinned |
+
+A weak review gives no findings, and that looks like success, so it never escalates. That is why `review` is pinned to `opus`.
+
 Route rules, per label, in `<ns>`:
 
-1. Every spawn starts on step 1 (`haiku`). Every role, skill, and seat starts there, except the pinned `interrogate` seats: `interrogate-a`, `-b`, `-c` always run `opus` (`piopus55<backend>`), and `interrogate-d` always runs `sol`. A pinned seat does not escalate.
+1. Every `write` or `research` spawn starts on step 1 (`haiku`). A `review` spawn always runs `opus` and does not escalate. The labels `interrogate-a`, `-b`, `-c` always run `opus`, and `interrogate-d` always runs `sol`, for any seat.
 2. The spawn goes one step up when:
    - the call has `escalate: true` (`--escalate`), or
    - the last `pstack_wait` of that label failed: `timeout`, `exited`, `error`, `length`, or `aborted`. The state `waiting` (T3) or `replaced` is not a failure.
@@ -75,7 +85,7 @@ The state is in `<ns>/.route/<label>` (step index) and `<label>.failed`. The bac
 
 - When to escalate: the parent checks each result (report, `git diff --stat`, the hunks it must check, and one test or check command for code). If the result is wrong, weak, or misses the brief, spawn the same label again with `escalate: true` and the consolidated scope. Do not retry at the same step. Say so in the reply.
 - Reasoning level and speed: ignore every upstream "reasoning level", "effort level", "fast mode", "fast or standard speed", `-fast` suffix, and `/setup-pstack` budget. Do not add `--thinking`. Each alias keeps its own thinking level.
-- Skills that ask for more than one model family (the `arena` cross-judge, Autopilot and Shipping verifiers, arena runners, blast-radius) start on `haiku` like all other seats. Give each seat a different angle in its brief. Report "single model family" in the output.
+- Skills that ask for more than one model family: the `arena` cross-judge, Autopilot and Shipping verifiers, and a second opinion or `show-me-your-work` reviewer use `seat: "review"`, so they run `opus`. Arena runners use `seat: "write"`. blast-radius uses `seat: "research"`. Give each seat a different angle in its brief. Report "single model family" in the output.
 - Override for one call only, by the user, outside a guarded session: `PSTACK_PI_CMD='pi --provider <provider> --model <id> --thinking <level>' $A spawn ...` (or `PSTACK_T3_MODEL` in T3). It replaces the routed model.
 
 ### Reuse a subagent (same tab, cached context)

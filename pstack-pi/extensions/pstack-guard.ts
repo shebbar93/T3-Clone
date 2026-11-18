@@ -45,6 +45,7 @@ const LABEL_PATTERN = "^[A-Za-z0-9][A-Za-z0-9._-]*$";
 const RUN_PATTERN = "^[A-Za-z0-9][A-Za-z0-9._-]*@[0-9a-f-]+$";
 const RUN_LINE = /^run: (\S+@\S+)$/m;
 const ROLES = ["poteto-agent", "comment-sicko"] as const;
+const SEATS = ["write", "research", "review"] as const;
 
 const DELEGATE_HELP = `pstack-guard: the poteto-mode parent must delegate this step. Call pstack_spawn, then pstack_wait. The parent can still run git, gh, and pstack-agent clean, and make a one-line edit. It can read ${TEXT_EXTENSIONS.join(", ")} and image files, and ranges of up to ${READ_LIMIT} lines. Only the user can switch the guard off, with /pstack-guard off.`;
 const TOOL_HELP = "pstack-guard: use the pstack_spawn, pstack_wait, and pstack_resume tools. They add the run id that stops a wait from returning an old result.";
@@ -88,6 +89,7 @@ function resolvePath({ cwd, raw }: { cwd: string; raw: string }) {
 const under = ({ root, target }: { root: string; target: string }) =>
   target === root || target.startsWith(root.endsWith(path.sep) ? root : root + path.sep);
 const isFree = (target: string) => FREE_ROOTS.some((root) => under({ root, target }));
+const isLspNavigation = (toolName: string) => toolName.startsWith("lsp_") && toolName !== "lsp_diagnostics";
 const isTranscript = (target: string) => under({ root: SESSIONS, target }) || path.extname(target).toLowerCase() === ".jsonl";
 
 function commandSegments(command: string) {
@@ -194,10 +196,14 @@ function startedRun(result: AgentResult) {
 
 const SpawnParams = Type.Object({
   label: Type.String({ pattern: LABEL_PATTERN, description: "Subagent label. A new spawn with the same label replaces the old subagent." }),
+  seat: Type.Enum(SEATS, {
+    description:
+      "Use write for a subagent that changes files. Use research for a subagent that reads and answers. Use review for a subagent that checks the work of another agent, such as a verifier, a judge, or a second opinion. A review seat runs opus and does not escalate. A write or research seat starts on haiku.",
+  }),
   escalate: Type.Optional(
     Type.Boolean({
       description:
-        "The route picks the model: haiku, then sonnet, then sol. Set true to run this label one step up after a weak or wrong result. A failed wait escalates the next spawn of the label by itself.",
+        "A write or research seat goes from haiku to sonnet to sol. Set true to run this label one step up after a weak or wrong result. A failed wait escalates the next spawn of the label by itself.",
     }),
   ),
   task: Type.String({ minLength: 1, description: "The brief. It must stand alone: the subagent does not see this chat. Give file paths, not copied file text." }),
@@ -212,6 +218,8 @@ function spawnArgs({ params, brief, cwd, worker }: { params: Static<typeof Spawn
     "spawn",
     params.label,
     brief,
+    "--seat",
+    params.seat,
     ...(params.escalate === true ? ["--escalate"] : []),
     ...(params.readonly === true ? ["--readonly"] : []),
     ...(params.cwd === undefined ? [] : ["--cwd", resolvePath({ cwd, raw: params.cwd })]),
@@ -338,6 +346,7 @@ export default function (pi: ExtensionAPI) {
     if (isToolCallEventType("bash", event)) return checkBash({ command: event.input.command, rules });
     if (isToolCallEventType("read", event)) return checkRead({ raw: event.input.path, limit: event.input.limit, cwd: ctx.cwd, rules });
     if (!rules.has("delegate")) return undefined;
+    if (isLspNavigation(event.toolName)) return block({ what: `\`${event.toolName}\``, help: DELEGATE_HELP });
     if (isToolCallEventType("edit", event)) return checkEdit({ raw: event.input.path, edits: event.input.edits, cwd: ctx.cwd });
     if (isToolCallEventType("write", event)) return checkWrite({ raw: event.input.path, cwd: ctx.cwd });
     return undefined;

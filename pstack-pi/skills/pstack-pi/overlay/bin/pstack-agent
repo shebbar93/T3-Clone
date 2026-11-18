@@ -29,7 +29,8 @@ GRACE=90
 
 usage() {
   cat <<'EOF'
-pstack-agent spawn  <label> <prompt-file> [--escalate] [--readonly] [--cwd <dir>]
+pstack-agent spawn  <label> <prompt-file> --seat write|research|review
+                    [--escalate] [--readonly] [--cwd <dir>]
                     [--skill <pstack-skill>] [--role poteto-agent|comment-sicko] [--worker]
 pstack-agent wait   <label>[@<id>]... [--timeout <seconds>]
 pstack-agent resume <label> <text>
@@ -39,7 +40,8 @@ pstack-agent smoke  <pstack-skill>
 
 spawn   Start one pi subagent in its own herdr tab, Rex window, or T3
         Code thread "pstack:<ns>:<label>". Without a mux, it runs in
-        the background. The route picks the model (see Models).
+        the background. The seat and the route pick the model (see
+        Models). --seat is required.
         Refuses an empty
         brief or a brief whose last line is a heading or ends in ":".
         --skill, --role, and --worker add the overlay, skill, role,
@@ -64,13 +66,15 @@ smoke   Spawn a readonly subagent with --skill <pstack-skill>. Pass
         only if it read the skill's SKILL.md and returned a result.
 
 Labels: [A-Za-z0-9][A-Za-z0-9._-]*
-Models: fixed route per label: haiku, then sonnet, then sol.
+Models: --seat review runs opus, pinned, no escalation.
+        --seat write|research: fixed route per label: haiku, then
+        sonnet, then sol.
         A spawn starts on haiku. It moves one step up when you pass
         --escalate, or when the last wait of that label failed (timeout,
         exit, error, length, aborted). After sol, spawn refuses: the
         parent takes the task back. clean with no labels resets it.
-        Pinned, no escalation: interrogate-a|b|c run opus,
-        interrogate-d runs sol.
+        Pinned by label, no escalation, any seat: interrogate-a|b|c
+        run opus, interrogate-d runs sol.
         haiku and sonnet run the ~/.zshrc alias pi<m>55<backend>, sol
         runs pisol61<backend>. backend: copilot if the parent pi uses
         github-copilot, else aperture. --model is refused.
@@ -137,6 +141,7 @@ pinned() {
   case "$1" in
     interrogate-a|interrogate-b|interrogate-c) echo opus ;;
     interrogate-d) echo sol ;;
+    *) [ "$2" != review ] || echo opus ;;
   esac
 }
 
@@ -307,12 +312,13 @@ launch() {
 
 spawn() {
   local label="$1" prompt="$2"; shift 2
-  local ro=0 cwd="$PWD" model escalate=0 step="" cmd skill="" role="" worker=0 lines
+  local ro=0 cwd="$PWD" model escalate=0 step="" cmd skill="" role="" worker=0 lines seat=""
   check_label "$label"
   while [ $# -gt 0 ]; do
     case "$1" in
       --readonly) ro=1 ;;
       --escalate) escalate=1 ;;
+      --seat) [ $# -ge 2 ] || die "--seat needs write|research|review"; seat="$2"; shift ;;
       --model) die "--model is refused: the route picks the model (haiku, then sonnet, then sol). After a weak result, spawn again with --escalate." ;;
       --cwd) [ $# -ge 2 ] || die "--cwd needs a dir"; cwd="$2"; shift ;;
       --skill) [ $# -ge 2 ] || die "--skill needs a pstack skill name"; skill="$2"; shift ;;
@@ -322,6 +328,11 @@ spawn() {
     esac
     shift
   done
+  case "$seat" in
+    write|research|review) ;;
+    "") die "--seat is required: write (changes files), research (reads and answers), or review (checks the work of another agent)" ;;
+    *) die "bad --seat: '$seat' (write|research|review)" ;;
+  esac
   [ -f "$prompt" ] || die "no prompt file: $prompt"
   lines=$(check_brief "$prompt")
   if [ -n "$skill" ]; then
@@ -332,7 +343,7 @@ spawn() {
     [ -f "${PI_SESSION_FILE:-}" ] || die "--skill reflect needs PI_SESSION_FILE"
   fi
   cwd=$(cd "$cwd" 2>/dev/null && pwd) || die "no such dir: $cwd"
-  model=$(pinned "$label")
+  model=$(pinned "$label" "$seat")
   if [ -n "$model" ]; then
     [ "$escalate" = 0 ] || die "'$label' is pinned to $model and does not escalate. The parent takes the task back."
   else
@@ -620,7 +631,7 @@ smoke() {
   brief=$(mktemp "${TMPDIR:-/tmp}/pstack-smoke.XXXXXX")
   printf '%s\n' "This is a smoke test of the brief. Do not do the steps of the skill." \
     "Reply with two lines. Line 1: the first heading of the skill file. Line 2: the path of the skill file that you read." > "$brief"
-  run=$(spawn "smoke-$skill" "$brief" --skill "$skill" --readonly | tee /dev/stderr | sed -n 's/^run: //p')
+  run=$(spawn "smoke-$skill" "$brief" --seat research --skill "$skill" --readonly | tee /dev/stderr | sed -n 's/^run: //p')
   rm -f "$brief"
   [ -n "$run" ] || die "smoke spawn failed"
   wait_all "$run" --timeout 600 || rc=1

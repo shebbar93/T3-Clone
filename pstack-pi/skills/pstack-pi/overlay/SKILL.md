@@ -36,24 +36,24 @@ Each entry replaces the named part of the upstream skill. The other parts of the
 ### poteto-mode
 
 - **Delegation.** The parent runs the playbook and does not do the step work. Start a subagent with `pstack_spawn` for each step that reads or searches code, reproduces a bug, runs commands with long output, writes code, or verifies. This replaces "Reproduce it yourself" in Bug fix step 1. The parent keeps only the goal, the plan, the briefs, the reports, and its own review. To review, read `git diff --stat`, then only the hunks you must check. Exception: a fully specified one-line edit.
-- **Guard.** `~/.pi/agent/extensions/pstack-guard.ts` enforces the Delegation and Models rules, and it blocks transcript reads in the parent. It starts when the session receives `/skill:poteto-mode`. `/skill:reflect` starts only the transcript block. In T3 Code, a `$poteto-mode` or `$reflect` mention starts it too. When a call is blocked, delegate the step. Do not try a different tool to get the same result. Subagents are not guarded. Only the user can switch it off (`/pstack-guard off`).
-- **Subagents section.** Replace the `subagent_type: "poteto-agent"` paragraph and the "Defaults for every `Task` call" paragraph with this text: Start every subagent with `pstack_spawn`. Inside a playbook step (code-writing delegates, ad-hoc helpers), set `role: "poteto-agent"`. The session that receives `/skill:poteto-mode` runs the playbook. Never spawn a poteto-agent subagent to run the playbook. Routed workflow skills (`how`, `why`, `interrogate`, `reflect`, `swarm`) write their own briefs. `pstack_spawn` returns at once, and `pstack_wait` collects. Give file pointers, not inlined context. A writer gets its own git worktree (`cwd`).
-- **Models.** The parent runs on `opus`. Every subagent starts on `haiku`, for every skill and seat, except `interrogate` (its own table). The route is fixed in `pstack-agent` (`HARNESS.md`, Models).
+- **Guard.** `~/.pi/agent/extensions/pstack-guard.ts` enforces the Delegation and Models rules, and it blocks transcript reads in the parent. It also blocks the LSP navigation tools (`lsp_definition`, `lsp_references`, `lsp_symbols`, `lsp_hover`) in the parent. `lsp_diagnostics` stays available. It starts when the session receives `/skill:poteto-mode`. `/skill:reflect` starts only the transcript block. In T3 Code, a `$poteto-mode` or `$reflect` mention starts it too. When a call is blocked, delegate the step. Do not try a different tool to get the same result. Subagents are not guarded. Only the user can switch it off (`/pstack-guard off`).
+- **Subagents section.** Replace the `subagent_type: "poteto-agent"` paragraph and the "Defaults for every `Task` call" paragraph with this text: Start every subagent with `pstack_spawn`. Inside a playbook step (code-writing delegates, ad-hoc helpers), set `role: "poteto-agent"`. Set `seat` on every spawn: `write` for a delegate that changes files, `research` for one that reads and answers, and `review` for a verifier or reviewer. The session that receives `/skill:poteto-mode` runs the playbook. Never spawn a poteto-agent subagent to run the playbook. Routed workflow skills (`how`, `why`, `interrogate`, `reflect`, `swarm`) write their own briefs. `pstack_spawn` returns at once, and `pstack_wait` collects. Give file pointers, not inlined context. A writer gets its own git worktree (`cwd`).
+- **Models.** The parent runs on `opus`. Every `pstack_spawn` sets `seat`. `write` and `research` start on `haiku`. `review` runs `opus`. `interrogate` has its own table. `pstack-agent` fixes the route. See `HARNESS.md`, Models.
 - **Escalation.** The parent is the watcher. Before it accepts a result, it checks the report, `git diff --stat`, the hunks it must check, and for code one test or check command. If the result is wrong, weak, or misses the brief, spawn the same label again with `escalate: true` and the consolidated scope. The route goes `haiku`, then `sonnet`, then `sol`. A failed wait escalates the next spawn of the label by itself. After `sol`, the spawn is refused: the parent takes the task back and decides the next step. Say each escalation in the reply.
-- **Second opinion.** A second opinion is the same prompt again with a different angle in the brief. Agreement is high-signal.
+- **Second opinion.** A second opinion is the same prompt again with a different angle in the brief, with `seat: "review"`. Agreement is high-signal.
 - **Fresh subagents by default.** Replace that paragraph with this rule: Use `pstack_resume` for a fix round, a follow-up question, or one more check on the subagent's own work, in the same scope. Resume only after `pstack_wait` returned. Put every open directive in the resume text. Give new work to a fresh subagent with consolidated scope: the original brief, every later directive, and the prior report and branch. New work is a new scope, the next queue item, or the third fix round. A retry after a wrong root cause or design is a spawn of the same label with `escalate: true`. Full rules: `HARNESS.md`, Reuse a subagent.
 - **Mode.** pi has no Custom Modes. The skill applies one time. Start each new task with `/skill:poteto-mode`.
 
 ### how
 
 - Always spawn the subagent, also for a simple question. Do not explore or answer inline. Brief, wait, and present.
-- Explainer: `pstack_spawn` with label `how-explainer`, `skill: "how"`, `readonly`. The task is the user's question. There are no explorers.
+- Explainer: `pstack_spawn` with label `how-explainer`, `seat: "research"`, `skill: "how"`, `readonly`. The task is the user's question. There are no explorers.
 - Send a follow-up on the same subsystem with `pstack_resume` to `how-explainer`. Run `pstack-agent clean` only when the user moves on.
 
 ### why
 
 - Upstream `why` answers inline. On pi, do not research inline. Spawn one subagent, wait, and present its answer.
-- Investigator: `pstack_spawn` with label `why-investigator`, `skill: "why"`, `readonly`. The task is the user's question and the target. There are no category investigators and no synthesizer.
+- Investigator: `pstack_spawn` with label `why-investigator`, `seat: "research"`, `skill: "why"`, `readonly`. The task is the user's question and the target. There are no category investigators and no synthesizer.
 - Send a follow-up on the same target with `pstack_resume` to `why-investigator`. Run `pstack-agent clean` only when the user moves on.
 - `readonly` is correct here. On pi it does not remove MCP tools.
 - MCP discovery: use the evidence tools in your pi tool list (MCP tools, `gh`, `sentry-cli`, `psql`). Subagents get the same tools.
@@ -70,7 +70,7 @@ Upstream `interrogate` now runs adversaries through arena Phase A steps 3 and 4 
 | D | `interrogate-d` | `sol` | cross-model check: correctness and security failures the other adversaries can miss |
 
 1. Give each adversary its own worktree: `git worktree add /tmp/interrogate-<slug>/<label> HEAD`, then copy the uncommitted changes of the scope into it. Set `cwd` to the worktree. Do not set `readonly`, because adversaries write repros in their worktree.
-2. Call `pstack_spawn` four times in one message, with the model from the table. In the next message, call `pstack_wait` with the four runs.
+2. Call `pstack_spawn` four times in one message, with `seat: "review"`. The label pins the model in the table. In the next message, call `pstack_wait` with the four runs.
 3. If D fails because Aperture or Sol is not available, continue with A, B, and C, and say so in the output.
 4. The angle only tells the adversary where to look first. The upstream brief stays in force: a finding needs a run.
 5. In the output, write each adversary as `Adversary [label]: [model] ([angle])`. Write "single model family" only when D did not run.
@@ -85,8 +85,8 @@ Go diffs: when the diff changes `.go` files, read `extras/interrogate/go-lens.md
 ### arena
 
 - Runners: N = 3 by default. Give each runner a different design direction in its brief, so the candidates differ.
-- Each candidate gets its own worktree: `git worktree add /tmp/arena-<slug>/candidate-<n>`. Spawn `arena-<n>` with `cwd` set to that worktree.
-- Cross-judge: the judge must not be from the parent's family. The route starts every seat on `haiku`, so the judge is from the parent's family. Spawn `arena-judge` with `readonly` and report "single model family". Tell the judge to score only against the rubric.
+- Each candidate gets its own worktree: `git worktree add /tmp/arena-<slug>/candidate-<n>`. Spawn `arena-<n>` with `seat: "write"` and `cwd` set to that worktree.
+- Cross-judge: the judge must not be from the parent's family. The judge runs `opus`, so it is from the parent's family. Spawn `arena-judge` with `seat: "review"`, `readonly`, and report "single model family". Tell the judge to score only against the rubric.
 
 ### swarm
 
@@ -96,18 +96,18 @@ Go diffs: when the diff changes `.go` files, read `extras/interrogate/go-lens.md
 
 ### reflect
 
-- Upstream `reflect` is one pass. On pi, always spawn one subagent. Never reflect inline, also for a short session. Call `pstack_spawn` with label `reflect`, `skill: "reflect"`, no `readonly`, and the task "Reflect on the transcript." The tool adds the transcript path. The guard blocks transcript reads in the parent. Wait, then present its Accepted, Rejected, and Backlog lists.
+- Upstream `reflect` is one pass. On pi, always spawn one subagent. Never reflect inline, also for a short session. Call `pstack_spawn` with label `reflect`, `seat: "research"`, `skill: "reflect"`, no `readonly`, and the task "Reflect on the transcript." The tool adds the transcript path. The guard blocks transcript reads in the parent. Wait, then present its Accepted, Rejected, and Backlog lists.
 - Skill used (for the subagent): a skill counts as used when the transcript shows a read of its `SKILL.md` (under `.pi/skills/`, `.agents/skills/`, `~/.pi/agent/skills/`, `~/.agents/skills/`, `~/.pi/agent/git/`, or `$PSTACK`), a `pstack_spawn` with that `skill`, a `pstack-agent spawn` brief or a `/skill:<name>` command that names it, or a tool call that matches its commands.
 - `create-skill` routing: a substantive edit is a draft that you show to the user as a diff, then apply. A description tune is a new `description` that you show to the user. A new skill is `~/.pi/agent/skills/<kebab-name>/SKILL.md` per pi `docs/skills.md`.
 - Upstream `plugins/cache/` and `.cursor/skills/` rule: never edit a skill under `$PSTACK` or `~/.pi/agent/git/`. To change a pstack skill, add an override to this overlay. For other skills, copy the folder to `.pi/skills/<skill>/` or `~/.pi/agent/skills/<skill>/`, show that path before approval, and edit the copy.
 
 ### recall
 
-- Fan-out subagents: `pstack_spawn` with label `recall-<n>` and `readonly`.
+- Fan-out subagents: `pstack_spawn` with label `recall-<n>`, `seat: "research"`, and `readonly`.
 
 ### no-comments
 
-- Comment Sicko: `pstack_spawn` with label `comment-sicko`, `role: "comment-sicko"`, and the scope as the task. Then `pstack_wait`.
+- Comment Sicko: `pstack_spawn` with label `comment-sicko`, `seat: "review"`, `role: "comment-sicko"`, and the scope as the task. Then `pstack_wait`.
 
 ### ketchup
 
@@ -128,6 +128,6 @@ Go diffs: when the diff changes `.go` files, read `extras/interrogate/go-lens.md
 ### Playbooks that delete, ship, or run for a long time
 
 - Autopilot-full, Autopilot-stack, Shipping: one subagent per PR owner or verifier, each in its own herdr tab or Rex window and git worktree. There are no cloud agents. Run restacks one at a time.
-- Verifiers: a verifier is a separate subagent from its worker. Its brief does not include the worker's reasoning. It starts on `haiku`, like every subagent. pi has no PR or CI event subscriptions: watch each PR as `HARNESS.md`, Loops, says. Probe liveness read-only with `herdr pane read <pane> --source recent` in herdr, or `rex capture -s "$REX_SESSION" -b <block> --trim | tail -n 100` in Rex. Never resume an agent to check on it.
+- Verifiers: a verifier is a separate subagent from its worker. Its brief does not include the worker's reasoning. Spawn it with `seat: "review"`, so it runs `opus`. pi has no PR or CI event subscriptions: watch each PR as `HARNESS.md`, Loops, says. Probe liveness read-only with `herdr pane read <pane> --source recent` in herdr, or `rex capture -s "$REX_SESSION" -b <block> --trim | tail -n 100` in Rex. Never resume an agent to check on it.
 - An hourly tick is a tick tab (`HARNESS.md`, Loops). Re-read the playbook from `$PSTACK` at each tick.
 - Worktree cleanup: transcript checks use `readonly`. See `HARNESS.md`, Upstream scripts, for the empty chat column.
