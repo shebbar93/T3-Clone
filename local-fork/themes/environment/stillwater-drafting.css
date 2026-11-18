@@ -478,3 +478,24 @@ svg.lucide {
 [data-slot="dialog-popup"]:not(.dialog-glass) > [data-slot="button"][aria-label^="Back"] {
   border-radius: 3px !important;
 }
+@keyframes ob-twinkle {
+  from {
+    opacity: 0.45;
+    animation-timing-function: steps(4);
+  }
+  25% {
+    opacity: 0.52;
+    animation-timing-function: steps(4);
+  }
+  50% {
+    opacity: 0.73;
+    animation-timing-function: steps(4);
+  }
+  75% {
+    opacity: 0.93;
+    animation-timing-function: steps(4);
+  }
+  to {
+    opacity: 1;
+  }
+}

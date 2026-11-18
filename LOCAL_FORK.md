@@ -133,6 +133,8 @@ A theme id that ends with `-drafting` (Stillwater Drafting, Carbonfox Drafting) 
 
 The Quicksilver edge runs only in dark mode. Quicksilver has no light version.
 
+Stillwater Drafting has a sidebar star twinkle that never stops. The `@keyframes ob-twinkle` at the end of `stillwater-drafting.css` replaces the upstream one and moves the opacity in 16 steps. A smooth twinkle sits inside the sidebar `backdrop-filter`, so Chromium blurs the sidebar again on each frame. In a headless Chromium test, the idle GPU process went from 30% to 3 to 5%. Keep these keyframes when you paste a new upstream Stillwater CSS. While the agent works, the wave costs about 13% of the renderer. A lower `--qs-pace` step count decreases only GPU work, because Chromium calculates the style again on each frame.
+
 To change the palette of an environment theme, change its file in `local-fork/themes/environment/`, not in `~/.t3/userdata/themes/`. The next `--apply` writes over the file in `~/.t3/userdata/themes/`.
 
 ### Use a theme
