@@ -119,7 +119,7 @@ To remove a custom theme from the Videorc set, delete its file from `local-fork/
 
 Optional: put CSS for only this theme in `local-fork/themes/environment/<id>.css`. The script adds it after the Videorc CSS. If both set the same property, this file is used.
 
-A theme id that ends with `-drafting` (Stillwater Drafting, Carbonfox Drafting) also gets `local-fork/drafting.css`: sharp corners, corner ticks, square icons, and the [Quicksilver](https://github.com/kristianbonnici/t3-quicksilver-theme) (MIT) composer edge. The edge is still metal when the thread is idle. A wave moves on it only while the agent works. Reduce Motion stops the wave.
+A theme id that ends with `-drafting` (Stillwater Drafting, Carbonfox Drafting) also gets `local-fork/drafting.css`: sharp corners, corner ticks, square icons, and the [Quicksilver](https://github.com/kristianbonnici/t3-quicksilver-theme) (MIT) composer edge. The edge shows only while the agent works. It is a metal rim with a wave on it. An idle composer has no rim. Reduce Motion stops the wave and keeps the metal rim.
 
 `scripts/local-fork.sh selectors` does not check `drafting.css`. After a merge, also check these in a Drafting theme:
 

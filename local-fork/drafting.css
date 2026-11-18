@@ -129,408 +129,390 @@ svg.lucide {
   border: 0 !important;
   border-radius: var(--ob-card-radius) !important;
   box-shadow:
-    inset 0 0 0 calc(var(--qs-line) + 1px) #000,
     0 0 0 0.5px #000,
     0 14px 34px -14px #000,
     0 10px 30px rgb(0 0 0 / 0.25) !important;
-}
-.dark
-  :is(
-    [data-slot="composer-host"]:not(:has([data-composer-banner-surface="attached"])),
-    [data-slot="composer-host"]:has([data-composer-banner-surface="attached"])
-      [data-chat-composer-main-surface]
-  )::before {
-  content: "" !important;
-  display: block !important;
-  position: absolute !important;
-  inset: 0 !important;
-  z-index: auto !important;
-  pointer-events: none;
-  border: var(--qs-line) solid #0000 !important;
-  border-radius: var(--ob-card-radius) !important;
-  background: var(--qs-box-still) border-box !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-  mask-clip: padding-box, border-box;
-  mask-composite: exclude;
-}
-.dark
-  :is(
-    [data-slot="composer-host"]:not(:has([data-composer-banner-surface="attached"])),
-    [data-slot="composer-host"]:has([data-composer-banner-surface="attached"])
-      [data-chat-composer-main-surface]
-  )::after {
-  opacity: 0;
-  transition: none;
-  border: var(--qs-line) solid #0000 !important;
-  border-radius: var(--ob-card-radius) !important;
-  box-shadow: none !important;
-  background-image:
-    repeating-radial-gradient(
-      ellipse 740.741% 99999px at calc(var(--qs-p) * -740.741% + -607.407%) 50%,
-      #f7fbb1 0%,
-      #f7c14c 0.97%,
-      #c91470 1.94%,
-      #3b605b 2.91%,
-      #574c4f 3.88%,
-      #552f9e 4.85%,
-      #4180e4 5.83%,
-      #75dff9 6.8%,
-      #c7fcfa 7.77%,
-      #f5f8fe 8.74%,
-      #f8f8fc 11.65%,
-      #f7f9e5 12.62%,
-      #f8eea6 13.59%,
-      #f8bb6e 14.56%,
-      #da7341 15.53%,
-      #a53630 16.5%,
-      #6f1930 17.48%,
-      #441330 18.45%,
-      #271731 19.42%,
-      #191a33 20.39%,
-      #222138 30.1%,
-      #34374f 39.8%,
-      #5c5e77 49.5%,
-      #808399 59.2%,
-      #989baf 68.9%,
-      #adb1c2 78.6%,
-      #bfc3d2 83.5%,
-      #d3d7e4 88.3%,
-      #e7eaf4 93.2%,
-      #f2f6fc 98.1%,
-      #f5f5ff 100%
-    ),
-    repeating-radial-gradient(
-      ellipse 2222.222% 99999px at calc(var(--qs-p) * -2222.222% + -2122.222%) 50%,
-      #f7fbb1 0%,
-      #f7c14c 0.97%,
-      #c91470 1.94%,
-      #3b605b 2.91%,
-      #574c4f 3.88%,
-      #552f9e 4.85%,
-      #4180e4 5.83%,
-      #75dff9 6.8%,
-      #c7fcfa 7.77%,
-      #f5f8fe 8.74%,
-      #f8f8fc 11.65%,
-      #f7f9e5 12.62%,
-      #f8eea6 13.59%,
-      #f8bb6e 14.56%,
-      #da7341 15.53%,
-      #a53630 16.5%,
-      #6f1930 17.48%,
-      #441330 18.45%,
-      #271731 19.42%,
-      #191a33 20.39%,
-      #222138 30.1%,
-      #34374f 39.8%,
-      #5c5e77 49.5%,
-      #808399 59.2%,
-      #989baf 68.9%,
-      #adb1c2 78.6%,
-      #bfc3d2 83.5%,
-      #d3d7e4 88.3%,
-      #e7eaf4 93.2%,
-      #f2f6fc 98.1%,
-      #f5f5ff 100%
-    ),
-    repeating-radial-gradient(
-      ellipse 833.333% 99999px at calc(var(--qs-p) * 833.333% + 833.333%) 50%,
-      #f7fbb1 0%,
-      #f7c14c 0.97%,
-      #c91470 1.94%,
-      #3b605b 2.91%,
-      #574c4f 3.88%,
-      #552f9e 4.85%,
-      #4180e4 5.83%,
-      #75dff9 6.8%,
-      #c7fcfa 7.77%,
-      #f5f8fe 8.74%,
-      #f8f8fc 11.65%,
-      #f7f9e5 12.62%,
-      #f8eea6 13.59%,
-      #f8bb6e 14.56%,
-      #da7341 15.53%,
-      #a53630 16.5%,
-      #6f1930 17.48%,
-      #441330 18.45%,
-      #271731 19.42%,
-      #191a33 20.39%,
-      #222138 30.1%,
-      #34374f 39.8%,
-      #5c5e77 49.5%,
-      #808399 59.2%,
-      #989baf 68.9%,
-      #adb1c2 78.6%,
-      #bfc3d2 83.5%,
-      #d3d7e4 88.3%,
-      #e7eaf4 93.2%,
-      #f2f6fc 98.1%,
-      #f5f5ff 100%
-    ),
-    repeating-radial-gradient(
-      ellipse 188.679% 99999px at calc(var(--qs-p) * 188.679% + 166.038%) 50%,
-      #f7fbb1 0%,
-      #f7c14c 0.97%,
-      #c91470 1.94%,
-      #3b605b 2.91%,
-      #574c4f 3.88%,
-      #552f9e 4.85%,
-      #4180e4 5.83%,
-      #75dff9 6.8%,
-      #c7fcfa 7.77%,
-      #f5f8fe 8.74%,
-      #f8f8fc 11.65%,
-      #f7f9e5 12.62%,
-      #f8eea6 13.59%,
-      #f8bb6e 14.56%,
-      #da7341 15.53%,
-      #a53630 16.5%,
-      #6f1930 17.48%,
-      #441330 18.45%,
-      #271731 19.42%,
-      #191a33 20.39%,
-      #222138 30.1%,
-      #34374f 39.8%,
-      #5c5e77 49.5%,
-      #808399 59.2%,
-      #989baf 68.9%,
-      #adb1c2 78.6%,
-      #bfc3d2 83.5%,
-      #d3d7e4 88.3%,
-      #e7eaf4 93.2%,
-      #f2f6fc 98.1%,
-      #f5f5ff 100%
-    ),
-    repeating-radial-gradient(
-      ellipse 1111.111% 99999px at calc(var(--qs-p) * 1111.111% + 388.889%) 50%,
-      #f7fbb1 0%,
-      #f7c14c 0.97%,
-      #c91470 1.94%,
-      #3b605b 2.91%,
-      #574c4f 3.88%,
-      #552f9e 4.85%,
-      #4180e4 5.83%,
-      #75dff9 6.8%,
-      #c7fcfa 7.77%,
-      #f5f8fe 8.74%,
-      #f8f8fc 11.65%,
-      #f7f9e5 12.62%,
-      #f8eea6 13.59%,
-      #f8bb6e 14.56%,
-      #da7341 15.53%,
-      #a53630 16.5%,
-      #6f1930 17.48%,
-      #441330 18.45%,
-      #271731 19.42%,
-      #191a33 20.39%,
-      #222138 30.1%,
-      #34374f 39.8%,
-      #5c5e77 49.5%,
-      #808399 59.2%,
-      #989baf 68.9%,
-      #adb1c2 78.6%,
-      #bfc3d2 83.5%,
-      #d3d7e4 88.3%,
-      #e7eaf4 93.2%,
-      #f2f6fc 98.1%,
-      #f5f5ff 100%
-    ),
-    repeating-radial-gradient(
-      ellipse 99999px 526.316% at 50% calc(var(--qs-p) * 526.316% + 584.211%),
-      #f7fbb1 0%,
-      #f7c14c 0.97%,
-      #c91470 1.94%,
-      #3b605b 2.91%,
-      #574c4f 3.88%,
-      #552f9e 4.85%,
-      #4180e4 5.83%,
-      #75dff9 6.8%,
-      #c7fcfa 7.77%,
-      #f5f8fe 8.74%,
-      #f8f8fc 11.65%,
-      #f7f9e5 12.62%,
-      #f8eea6 13.59%,
-      #f8bb6e 14.56%,
-      #da7341 15.53%,
-      #a53630 16.5%,
-      #6f1930 17.48%,
-      #441330 18.45%,
-      #271731 19.42%,
-      #191a33 20.39%,
-      #222138 30.1%,
-      #34374f 39.8%,
-      #5c5e77 49.5%,
-      #808399 59.2%,
-      #989baf 68.9%,
-      #adb1c2 78.6%,
-      #bfc3d2 83.5%,
-      #d3d7e4 88.3%,
-      #e7eaf4 93.2%,
-      #f2f6fc 98.1%,
-      #f5f5ff 100%
-    ),
-    repeating-radial-gradient(
-      ellipse 99999px 294.118% at 50% calc(var(--qs-p) * -294.118% + -270.588%),
-      #f7fbb1 0%,
-      #f7c14c 0.97%,
-      #c91470 1.94%,
-      #3b605b 2.91%,
-      #574c4f 3.88%,
-      #552f9e 4.85%,
-      #4180e4 5.83%,
-      #75dff9 6.8%,
-      #c7fcfa 7.77%,
-      #f5f8fe 8.74%,
-      #f8f8fc 11.65%,
-      #f7f9e5 12.62%,
-      #f8eea6 13.59%,
-      #f8bb6e 14.56%,
-      #da7341 15.53%,
-      #a53630 16.5%,
-      #6f1930 17.48%,
-      #441330 18.45%,
-      #271731 19.42%,
-      #191a33 20.39%,
-      #222138 30.1%,
-      #34374f 39.8%,
-      #5c5e77 49.5%,
-      #808399 59.2%,
-      #989baf 68.9%,
-      #adb1c2 78.6%,
-      #bfc3d2 83.5%,
-      #d3d7e4 88.3%,
-      #e7eaf4 93.2%,
-      #f2f6fc 98.1%,
-      #f5f5ff 100%
-    ),
-    repeating-radial-gradient(
-      ellipse 370.37% 99999px at calc(var(--qs-p) * 370.37% + 140.741%) 50%,
-      #f7fbb1 0%,
-      #f7c14c 0.97%,
-      #c91470 1.94%,
-      #3b605b 2.91%,
-      #574c4f 3.88%,
-      #552f9e 4.85%,
-      #4180e4 5.83%,
-      #75dff9 6.8%,
-      #c7fcfa 7.77%,
-      #f5f8fe 8.74%,
-      #f8f8fc 11.65%,
-      #f7f9e5 12.62%,
-      #f8eea6 13.59%,
-      #f8bb6e 14.56%,
-      #da7341 15.53%,
-      #a53630 16.5%,
-      #6f1930 17.48%,
-      #441330 18.45%,
-      #271731 19.42%,
-      #191a33 20.39%,
-      #222138 30.1%,
-      #34374f 39.8%,
-      #5c5e77 49.5%,
-      #808399 59.2%,
-      #989baf 68.9%,
-      #adb1c2 78.6%,
-      #bfc3d2 83.5%,
-      #d3d7e4 88.3%,
-      #e7eaf4 93.2%,
-      #f2f6fc 98.1%,
-      #f5f5ff 100%
-    ),
-    repeating-radial-gradient(
-      ellipse 99999px 227.273% at 50% calc(var(--qs-p) * -227.273% + -86.364%),
-      #f7fbb1 0%,
-      #f7c14c 0.97%,
-      #c91470 1.94%,
-      #3b605b 2.91%,
-      #574c4f 3.88%,
-      #552f9e 4.85%,
-      #4180e4 5.83%,
-      #75dff9 6.8%,
-      #c7fcfa 7.77%,
-      #f5f8fe 8.74%,
-      #f8f8fc 11.65%,
-      #f7f9e5 12.62%,
-      #f8eea6 13.59%,
-      #f8bb6e 14.56%,
-      #da7341 15.53%,
-      #a53630 16.5%,
-      #6f1930 17.48%,
-      #441330 18.45%,
-      #271731 19.42%,
-      #191a33 20.39%,
-      #222138 30.1%,
-      #34374f 39.8%,
-      #5c5e77 49.5%,
-      #808399 59.2%,
-      #989baf 68.9%,
-      #adb1c2 78.6%,
-      #bfc3d2 83.5%,
-      #d3d7e4 88.3%,
-      #e7eaf4 93.2%,
-      #f2f6fc 98.1%,
-      #f5f5ff 100%
-    );
-  background-size:
-    calc(9% + 1px) var(--qs-band),
-    calc(16% + 1px) var(--qs-band),
-    calc(25% + 1px) var(--qs-band),
-    calc(38% + 1px) var(--qs-band),
-    calc(12% + 1px) var(--qs-band),
-    var(--qs-band) calc(22% + 1px),
-    var(--qs-band) calc(78% + 1px),
-    calc(100% + 1px) var(--qs-band),
-    var(--qs-band) calc(100% + 1px);
-  background-position:
-    0% 100%,
-    10.714% 100%,
-    33.333% 100%,
-    80.645% 100%,
-    100% 100%,
-    100% 0%,
-    100% 100%,
-    0% 0%,
-    0% 0%;
-  background-repeat: no-repeat;
-  background-origin: border-box;
-  background-clip: border-box;
-  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-  mask-clip: padding-box, border-box;
-  mask-composite: exclude;
-}
-.dark
-  :is(
-    [data-slot="composer-host"]:not(:has([data-composer-banner-surface="attached"])),
-    [data-slot="composer-host"]:has([data-composer-banner-surface="attached"])
-      [data-chat-composer-main-surface]
-  ):has(
+  &::after {
+    opacity: 0;
+    transition: none;
+    border: var(--qs-line) solid #0000 !important;
+    border-radius: var(--ob-card-radius) !important;
+    box-shadow: none !important;
+    background-image:
+      repeating-radial-gradient(
+        ellipse 740.741% 99999px at calc(var(--qs-p) * -740.741% + -607.407%) 50%,
+        #f7fbb1 0%,
+        #f7c14c 0.97%,
+        #c91470 1.94%,
+        #3b605b 2.91%,
+        #574c4f 3.88%,
+        #552f9e 4.85%,
+        #4180e4 5.83%,
+        #75dff9 6.8%,
+        #c7fcfa 7.77%,
+        #f5f8fe 8.74%,
+        #f8f8fc 11.65%,
+        #f7f9e5 12.62%,
+        #f8eea6 13.59%,
+        #f8bb6e 14.56%,
+        #da7341 15.53%,
+        #a53630 16.5%,
+        #6f1930 17.48%,
+        #441330 18.45%,
+        #271731 19.42%,
+        #191a33 20.39%,
+        #222138 30.1%,
+        #34374f 39.8%,
+        #5c5e77 49.5%,
+        #808399 59.2%,
+        #989baf 68.9%,
+        #adb1c2 78.6%,
+        #bfc3d2 83.5%,
+        #d3d7e4 88.3%,
+        #e7eaf4 93.2%,
+        #f2f6fc 98.1%,
+        #f5f5ff 100%
+      ),
+      repeating-radial-gradient(
+        ellipse 2222.222% 99999px at calc(var(--qs-p) * -2222.222% + -2122.222%) 50%,
+        #f7fbb1 0%,
+        #f7c14c 0.97%,
+        #c91470 1.94%,
+        #3b605b 2.91%,
+        #574c4f 3.88%,
+        #552f9e 4.85%,
+        #4180e4 5.83%,
+        #75dff9 6.8%,
+        #c7fcfa 7.77%,
+        #f5f8fe 8.74%,
+        #f8f8fc 11.65%,
+        #f7f9e5 12.62%,
+        #f8eea6 13.59%,
+        #f8bb6e 14.56%,
+        #da7341 15.53%,
+        #a53630 16.5%,
+        #6f1930 17.48%,
+        #441330 18.45%,
+        #271731 19.42%,
+        #191a33 20.39%,
+        #222138 30.1%,
+        #34374f 39.8%,
+        #5c5e77 49.5%,
+        #808399 59.2%,
+        #989baf 68.9%,
+        #adb1c2 78.6%,
+        #bfc3d2 83.5%,
+        #d3d7e4 88.3%,
+        #e7eaf4 93.2%,
+        #f2f6fc 98.1%,
+        #f5f5ff 100%
+      ),
+      repeating-radial-gradient(
+        ellipse 833.333% 99999px at calc(var(--qs-p) * 833.333% + 833.333%) 50%,
+        #f7fbb1 0%,
+        #f7c14c 0.97%,
+        #c91470 1.94%,
+        #3b605b 2.91%,
+        #574c4f 3.88%,
+        #552f9e 4.85%,
+        #4180e4 5.83%,
+        #75dff9 6.8%,
+        #c7fcfa 7.77%,
+        #f5f8fe 8.74%,
+        #f8f8fc 11.65%,
+        #f7f9e5 12.62%,
+        #f8eea6 13.59%,
+        #f8bb6e 14.56%,
+        #da7341 15.53%,
+        #a53630 16.5%,
+        #6f1930 17.48%,
+        #441330 18.45%,
+        #271731 19.42%,
+        #191a33 20.39%,
+        #222138 30.1%,
+        #34374f 39.8%,
+        #5c5e77 49.5%,
+        #808399 59.2%,
+        #989baf 68.9%,
+        #adb1c2 78.6%,
+        #bfc3d2 83.5%,
+        #d3d7e4 88.3%,
+        #e7eaf4 93.2%,
+        #f2f6fc 98.1%,
+        #f5f5ff 100%
+      ),
+      repeating-radial-gradient(
+        ellipse 188.679% 99999px at calc(var(--qs-p) * 188.679% + 166.038%) 50%,
+        #f7fbb1 0%,
+        #f7c14c 0.97%,
+        #c91470 1.94%,
+        #3b605b 2.91%,
+        #574c4f 3.88%,
+        #552f9e 4.85%,
+        #4180e4 5.83%,
+        #75dff9 6.8%,
+        #c7fcfa 7.77%,
+        #f5f8fe 8.74%,
+        #f8f8fc 11.65%,
+        #f7f9e5 12.62%,
+        #f8eea6 13.59%,
+        #f8bb6e 14.56%,
+        #da7341 15.53%,
+        #a53630 16.5%,
+        #6f1930 17.48%,
+        #441330 18.45%,
+        #271731 19.42%,
+        #191a33 20.39%,
+        #222138 30.1%,
+        #34374f 39.8%,
+        #5c5e77 49.5%,
+        #808399 59.2%,
+        #989baf 68.9%,
+        #adb1c2 78.6%,
+        #bfc3d2 83.5%,
+        #d3d7e4 88.3%,
+        #e7eaf4 93.2%,
+        #f2f6fc 98.1%,
+        #f5f5ff 100%
+      ),
+      repeating-radial-gradient(
+        ellipse 1111.111% 99999px at calc(var(--qs-p) * 1111.111% + 388.889%) 50%,
+        #f7fbb1 0%,
+        #f7c14c 0.97%,
+        #c91470 1.94%,
+        #3b605b 2.91%,
+        #574c4f 3.88%,
+        #552f9e 4.85%,
+        #4180e4 5.83%,
+        #75dff9 6.8%,
+        #c7fcfa 7.77%,
+        #f5f8fe 8.74%,
+        #f8f8fc 11.65%,
+        #f7f9e5 12.62%,
+        #f8eea6 13.59%,
+        #f8bb6e 14.56%,
+        #da7341 15.53%,
+        #a53630 16.5%,
+        #6f1930 17.48%,
+        #441330 18.45%,
+        #271731 19.42%,
+        #191a33 20.39%,
+        #222138 30.1%,
+        #34374f 39.8%,
+        #5c5e77 49.5%,
+        #808399 59.2%,
+        #989baf 68.9%,
+        #adb1c2 78.6%,
+        #bfc3d2 83.5%,
+        #d3d7e4 88.3%,
+        #e7eaf4 93.2%,
+        #f2f6fc 98.1%,
+        #f5f5ff 100%
+      ),
+      repeating-radial-gradient(
+        ellipse 99999px 526.316% at 50% calc(var(--qs-p) * 526.316% + 584.211%),
+        #f7fbb1 0%,
+        #f7c14c 0.97%,
+        #c91470 1.94%,
+        #3b605b 2.91%,
+        #574c4f 3.88%,
+        #552f9e 4.85%,
+        #4180e4 5.83%,
+        #75dff9 6.8%,
+        #c7fcfa 7.77%,
+        #f5f8fe 8.74%,
+        #f8f8fc 11.65%,
+        #f7f9e5 12.62%,
+        #f8eea6 13.59%,
+        #f8bb6e 14.56%,
+        #da7341 15.53%,
+        #a53630 16.5%,
+        #6f1930 17.48%,
+        #441330 18.45%,
+        #271731 19.42%,
+        #191a33 20.39%,
+        #222138 30.1%,
+        #34374f 39.8%,
+        #5c5e77 49.5%,
+        #808399 59.2%,
+        #989baf 68.9%,
+        #adb1c2 78.6%,
+        #bfc3d2 83.5%,
+        #d3d7e4 88.3%,
+        #e7eaf4 93.2%,
+        #f2f6fc 98.1%,
+        #f5f5ff 100%
+      ),
+      repeating-radial-gradient(
+        ellipse 99999px 294.118% at 50% calc(var(--qs-p) * -294.118% + -270.588%),
+        #f7fbb1 0%,
+        #f7c14c 0.97%,
+        #c91470 1.94%,
+        #3b605b 2.91%,
+        #574c4f 3.88%,
+        #552f9e 4.85%,
+        #4180e4 5.83%,
+        #75dff9 6.8%,
+        #c7fcfa 7.77%,
+        #f5f8fe 8.74%,
+        #f8f8fc 11.65%,
+        #f7f9e5 12.62%,
+        #f8eea6 13.59%,
+        #f8bb6e 14.56%,
+        #da7341 15.53%,
+        #a53630 16.5%,
+        #6f1930 17.48%,
+        #441330 18.45%,
+        #271731 19.42%,
+        #191a33 20.39%,
+        #222138 30.1%,
+        #34374f 39.8%,
+        #5c5e77 49.5%,
+        #808399 59.2%,
+        #989baf 68.9%,
+        #adb1c2 78.6%,
+        #bfc3d2 83.5%,
+        #d3d7e4 88.3%,
+        #e7eaf4 93.2%,
+        #f2f6fc 98.1%,
+        #f5f5ff 100%
+      ),
+      repeating-radial-gradient(
+        ellipse 370.37% 99999px at calc(var(--qs-p) * 370.37% + 140.741%) 50%,
+        #f7fbb1 0%,
+        #f7c14c 0.97%,
+        #c91470 1.94%,
+        #3b605b 2.91%,
+        #574c4f 3.88%,
+        #552f9e 4.85%,
+        #4180e4 5.83%,
+        #75dff9 6.8%,
+        #c7fcfa 7.77%,
+        #f5f8fe 8.74%,
+        #f8f8fc 11.65%,
+        #f7f9e5 12.62%,
+        #f8eea6 13.59%,
+        #f8bb6e 14.56%,
+        #da7341 15.53%,
+        #a53630 16.5%,
+        #6f1930 17.48%,
+        #441330 18.45%,
+        #271731 19.42%,
+        #191a33 20.39%,
+        #222138 30.1%,
+        #34374f 39.8%,
+        #5c5e77 49.5%,
+        #808399 59.2%,
+        #989baf 68.9%,
+        #adb1c2 78.6%,
+        #bfc3d2 83.5%,
+        #d3d7e4 88.3%,
+        #e7eaf4 93.2%,
+        #f2f6fc 98.1%,
+        #f5f5ff 100%
+      ),
+      repeating-radial-gradient(
+        ellipse 99999px 227.273% at 50% calc(var(--qs-p) * -227.273% + -86.364%),
+        #f7fbb1 0%,
+        #f7c14c 0.97%,
+        #c91470 1.94%,
+        #3b605b 2.91%,
+        #574c4f 3.88%,
+        #552f9e 4.85%,
+        #4180e4 5.83%,
+        #75dff9 6.8%,
+        #c7fcfa 7.77%,
+        #f5f8fe 8.74%,
+        #f8f8fc 11.65%,
+        #f7f9e5 12.62%,
+        #f8eea6 13.59%,
+        #f8bb6e 14.56%,
+        #da7341 15.53%,
+        #a53630 16.5%,
+        #6f1930 17.48%,
+        #441330 18.45%,
+        #271731 19.42%,
+        #191a33 20.39%,
+        #222138 30.1%,
+        #34374f 39.8%,
+        #5c5e77 49.5%,
+        #808399 59.2%,
+        #989baf 68.9%,
+        #adb1c2 78.6%,
+        #bfc3d2 83.5%,
+        #d3d7e4 88.3%,
+        #e7eaf4 93.2%,
+        #f2f6fc 98.1%,
+        #f5f5ff 100%
+      );
+    background-size:
+      calc(9% + 1px) var(--qs-band),
+      calc(16% + 1px) var(--qs-band),
+      calc(25% + 1px) var(--qs-band),
+      calc(38% + 1px) var(--qs-band),
+      calc(12% + 1px) var(--qs-band),
+      var(--qs-band) calc(22% + 1px),
+      var(--qs-band) calc(78% + 1px),
+      calc(100% + 1px) var(--qs-band),
+      var(--qs-band) calc(100% + 1px);
+    background-position:
+      0% 100%,
+      10.714% 100%,
+      33.333% 100%,
+      80.645% 100%,
+      100% 100%,
+      100% 0%,
+      100% 100%,
+      0% 0%,
+      0% 0%;
+    background-repeat: no-repeat;
+    background-origin: border-box;
+    background-clip: border-box;
+    mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+    mask-clip: padding-box, border-box;
+    mask-composite: exclude;
+  }
+  &:has(
     button[aria-label^="Stop"],
     button[aria-label="Queue message"],
     button[aria-label="Steer message"]
-  )::after {
-  opacity: 1;
-  transition: opacity 0.6s ease-out;
-  animation: qs-cycle var(--qs-cycle) var(--qs-pace) infinite;
+  ) {
+    box-shadow:
+      inset 0 0 0 calc(var(--qs-line) + 1px) #000,
+      0 0 0 0.5px #000,
+      0 14px 34px -14px #000,
+      0 10px 30px rgb(0 0 0 / 0.25) !important;
+    &::before {
+      content: "" !important;
+      display: block !important;
+      position: absolute !important;
+      inset: 0 !important;
+      z-index: auto !important;
+      pointer-events: none;
+      border: var(--qs-line) solid #0000 !important;
+      border-radius: var(--ob-card-radius) !important;
+      background: var(--qs-box-still) border-box !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+      mask-clip: padding-box, border-box;
+      mask-composite: exclude;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    &:has(
+        button[aria-label^="Stop"],
+        button[aria-label="Queue message"],
+        button[aria-label="Steer message"]
+      )::after {
+      opacity: 1;
+      transition: opacity 0.6s ease-out;
+      animation: qs-cycle var(--qs-cycle) var(--qs-pace) infinite;
+    }
+  }
 }
 @keyframes qs-cycle {
   to {
     --qs-p: 1;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .dark
-    :is(
-      [data-slot="composer-host"]:not(:has([data-composer-banner-surface="attached"])),
-      [data-slot="composer-host"]:has([data-composer-banner-surface="attached"])
-        [data-chat-composer-main-surface]
-    ):has(
-      button[aria-label^="Stop"],
-      button[aria-label="Queue message"],
-      button[aria-label="Steer message"]
-    )::after {
-    animation: none;
-    opacity: 0 !important;
   }
 }
