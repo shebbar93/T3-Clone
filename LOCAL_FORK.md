@@ -4,15 +4,17 @@ This repo is a fork of [pingdotgg/t3code](https://github.com/pingdotgg/t3code).
 
 Branch `local/pr-28191` is upstream `main` plus these local changes:
 
-| Change                                                                                                                       | Why                                                                                                                                                                                                           |
-| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Composer block caret (`caret-shape: block` on `.composer-tiptap` in `local-fork/videorc-theme.css`)                          | Local preference. Part of the [Videorc themes](#videorc-themes). Needs Chromium 144 or later (Electron 45 has Chromium 156).                                                                                  |
-| Thread details hidden by default (`rightPanelStore.ts`)                                                                      | Local preference.                                                                                                                                                                                             |
-| Electron `45.2.3` (`apps/desktop/package.json`), `node-abi` `4.40.0` (`pnpm-workspace.yaml`)                                 | Electron 44 (Chromium 152) draws a typed `->` as `>` after the next space. Electron 45 (Chromium 156) draws the arrow correctly.                                                                              |
-| Videorc look (`local-fork/`, published as environment themes)                                                                | Light skeuomorphic style from [Videorc UI](https://ui.videorc.com). No app code change. See [Videorc themes](#videorc-themes).                                                                                |
-| Composer focus (`ChatView.tsx`, `KeybindingsSettings.logic.ts`, `composer.focus` in `packages/contracts/src/keybindings.ts`) | The `composer.focus` command puts focus in the prompt box. It has no default key. Bind Ctrl+L in Settings > Keybindings. Cmd+W also puts focus in the prompt box when it closes the last right panel surface. |
-| Thread cycle (`resolveAdjacentThreadId` in `Sidebar.logic.ts`)                                                               | `thread.previous` and `thread.next` go around from the first thread to the last, and from the last to the first.                                                                                              |
-| First working thread (`thread.firstWorking` in contracts, `packages/shared/src/keybindings.ts`, `Sidebar.tsx`)               | `mod+shift+w` goes to the first thread in the Working section. If that thread is open, it stays open.                                                                                                         |
+| Change                                                                                                                       | Why                                                                                                                                                                                                                                                                             |
+| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Composer block caret (`caret-shape: block` on `.composer-tiptap` in `local-fork/videorc-theme.css`)                          | Local preference. Part of the [Videorc themes](#videorc-themes). Needs Chromium 144 or later (Electron 45 has Chromium 156).                                                                                                                                                    |
+| Allo font features (`font-feature-settings: "cv05", "ss03"` on `html` in `local-fork/videorc-theme.css`)                     | Dotted zero and open figures for the [Allo](https://allo.joshpuckett.me/) Interface font. `.font-mono` and `--diffs-font-features` reset to `normal`, so code and diffs do not get them. The prompt box keeps upstream's `normal`, so a separate Prompt font does not get them. |
+| Thread details hidden by default (`rightPanelStore.ts`)                                                                      | Local preference.                                                                                                                                                                                                                                                               |
+| Electron `45.2.3` (`apps/desktop/package.json`), `node-abi` `4.40.0` (`pnpm-workspace.yaml`)                                 | Electron 44 (Chromium 152) draws a typed `->` as `>` after the next space. Electron 45 (Chromium 156) draws the arrow correctly.                                                                                                                                                |
+| Rune look (`local-fork/rune-theme.css`, published as "Stillwater Rune" and "Carbonfox Rune")                                 | Components in the style of [Rune](https://github.com/anomalyco/rune). No app code change. See [Rune themes](#rune-themes).                                                                                                                                                      |
+| Videorc look (`local-fork/`, published as environment themes)                                                                | Light skeuomorphic style from [Videorc UI](https://ui.videorc.com). No app code change. See [Videorc themes](#videorc-themes).                                                                                                                                                  |
+| Composer focus (`ChatView.tsx`, `KeybindingsSettings.logic.ts`, `composer.focus` in `packages/contracts/src/keybindings.ts`) | The `composer.focus` command puts focus in the prompt box. It has no default key. Bind Ctrl+L in Settings > Keybindings. Cmd+W also puts focus in the prompt box when it closes the last right panel surface.                                                                   |
+| Thread cycle (`resolveAdjacentThreadId` in `Sidebar.logic.ts`)                                                               | `thread.previous` and `thread.next` go around from the first thread to the last, and from the last to the first.                                                                                                                                                                |
+| First working thread (`thread.firstWorking` in contracts, `packages/shared/src/keybindings.ts`, `Sidebar.tsx`)               | `mod+shift+w` goes to the first thread in the Working section. If that thread is open, it stays open.                                                                                                                                                                           |
 
 | Remote     | URL                                              |
 | ---------- | ------------------------------------------------ |
@@ -69,20 +71,23 @@ If `build` stops on the dev watcher, stop it with the `kill <pid>` it prints. Th
 | Prompt rim and drop                     | `composer-shell`, `composer-host` slots; `--chat-composer-outline`                                        |
 | Prompt raised look (dark), 10px corners | `composer-host` `::after` outline; `data-chat-composer-main-surface`, `data-chat-composer-surface`        |
 | Banner rims                             | `[data-composer-banner-surface]`, `--chat-composer-attached-outline`                                      |
+| No Allo font features in the prompt     | `.composer-tiptap.ProseMirror` sets `font-feature-settings: normal` (upstream)                            |
 | Chrome plate                            | `.bg-sidebar-row-active`, `[role="treeitem"][aria-selected="true"]`, `[data-slot="toggle"][data-pressed]` |
 
 ## Videorc themes
 
 Upstream keeps custom CSS inside each theme. There is no CSS that applies to all themes. So `scripts/local-fork.sh themes --apply` publishes one environment theme for each palette, each with the Videorc CSS. The local T3 server reads them from `~/.t3/userdata/themes/` and sends them to the desktop app and the local web client. The server watches the folder, so you do not restart it.
 
-| Input in git                                                                                        | Published as                                                                                                  |
-| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `local-fork/videorc-theme.css`                                                                      | The `css` of each theme below                                                                                 |
-| Built-in palettes from `apps/web/src/themePalette.ts` (T3 Code, T3 Chat, Grove, Ocean, Ember, Iris) | `<name>-videorc.json`, shown as "&lt;Name&gt; Videorc"                                                        |
-| `local-fork/themes/custom/*.json` (your custom themes, exported from the app)                       | `<name>-videorc.json`, shown as "&lt;Name&gt; Videorc". The original custom theme in the app does not change. |
-| `local-fork/themes/environment/*.json` (environment themes, such as Carbonfox)                      | The same file name. The CSS is added in place.                                                                |
-| `local-fork/themes/environment/<id>.css` (optional)                                                 | Added to the CSS of `<id>.json`, after the Videorc CSS.                                                       |
-| `local-fork/drafting.css`                                                                           | Added to each environment theme whose id ends with `-drafting`, after `<id>.css`.                             |
+| Input in git                                                                                        | Published as                                                                                                                |
+| --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `local-fork/videorc-theme.css`                                                                      | The `css` of each theme below                                                                                               |
+| Built-in palettes from `apps/web/src/themePalette.ts` (T3 Code, T3 Chat, Grove, Ocean, Ember, Iris) | `<name>-videorc.json`, shown as "&lt;Name&gt; Videorc"                                                                      |
+| `local-fork/themes/custom/*.json` (your custom themes, exported from the app)                       | `<name>-videorc.json`, shown as "&lt;Name&gt; Videorc". The original custom theme in the app does not change.               |
+| `local-fork/themes/environment/*.json` (environment themes, such as Carbonfox)                      | The same file name. The CSS is added in place.                                                                              |
+| `local-fork/themes/environment/<id>.css` (optional)                                                 | Added to the CSS of `<id>.json`, after the Videorc CSS.                                                                     |
+| `local-fork/drafting-flat.css`                                                                      | Added to each environment theme whose id ends with `-drafting`, after the Videorc CSS. It makes the Videorc gradients flat. |
+| `local-fork/rune-buttons.css`                                                                       | Added to each environment theme whose id ends with `-drafting`, after `drafting-flat.css` and before `<id>.css`.            |
+| `local-fork/drafting.css`                                                                           | Added to each environment theme whose id ends with `-drafting`, after `<id>.css`.                                           |
 
 The output depends only on the files in git, so the same commit always gives the same files. `themes` shows each file as `ADD`, `UPDATE`, `SAME`, or `REMOVE`, and exits with code 2 if a change is waiting. `~/.t3/userdata/themes/.videorc-manifest` lists the files that the script owns. If you remove an input, `--apply` removes its file. It shows other files in the folder as `OTHER` and does not change them.
 
@@ -154,6 +159,35 @@ To change the palette of an environment theme, change its file in `local-fork/th
 | ------------------------------------ | -------------------------------------------------------------------------------------- |
 | `local-fork/`                        | Git, on this branch and `origin`                                                       |
 | `~/Documents/t3code-videorc-backup/` | Your disk, outside the repo. It has the CSS and the theme files from 16 November 2026. |
+
+## Rune themes
+
+`local-fork/rune-theme.css` restyles the components with the look of [Rune](https://github.com/anomalyco/rune) (MIT), the OpenCode UI kit. The values come from Rune's `themes/opencode/assets/theme.json` (elevations, hairlines, overlays) and `crates/rune-kit` (switch and keycap sizes). It does not change the Videorc themes.
+
+The Rune buttons are in `local-fork/rune-buttons.css`. The Drafting themes also use this file, after `videorc-theme.css`, so they get the Rune buttons and keep the rest of the Videorc look.
+
+For each `local-fork/themes/environment/<name>-drafting.json`, `themes --apply` also publishes `<name>-rune.json`, shown as "&lt;Name&gt; Rune". It uses the same palette, so a palette change goes to both themes.
+
+| CSS of a Rune theme, in order                   | What it gives                                                                                         |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `local-fork/rune-buttons.css`                   | Rune buttons                                                                                          |
+| `local-fork/rune-theme.css`                     | Other Rune components, the Videorc chromatic Send button, the block caret, and the Allo font features |
+| `local-fork/themes/environment/<name>-rune.css` | Optional. `stillwater-rune.css` has the Stillwater background, starry sidebar, and code wells         |
+| `local-fork/drafting.css`                       | Sharp corners, corner ticks, and the Quicksilver composer edge                                        |
+
+After a merge, `scripts/local-fork.sh selectors` also checks the Rune selectors. Then check these in a Rune theme:
+
+| Look                                          | Depends on                                                                                                |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Raised buttons with a 0.5px rim               | `[data-slot="button"]` with `.bg-primary`, `.bg-destructive`, `.bg-popover`, or `.bg-secondary`           |
+| Small switch with a square knob               | `--thumb-size` and `data-size` on `[data-slot="switch"]`, `[data-slot="switch-thumb"]`                    |
+| Neutral checkbox                              | `[data-slot="checkbox"]`, `[data-slot="checkbox-indicator"]`                                              |
+| Hairline inputs                               | `[data-slot="input-control"]`, `[data-slot="select-trigger"].bg-background`                               |
+| Flat fill on the selected sidebar row         | `.bg-sidebar-row-active`, `[role="treeitem"][aria-selected="true"]`, `[data-slot="toggle"][data-pressed]` |
+| Raised message bubble with a border and ticks | `[data-user-message-bubble].bg-message`                                                                   |
+| Floating panel and dialog shadows             | The popup slots in the [Videorc look](#videorc-look) table                                                |
+
+To change the Rune look, edit `local-fork/rune-buttons.css` or `local-fork/rune-theme.css`, then run `scripts/local-fork.sh themes` and `scripts/local-fork.sh themes --apply`.
 
 ## When upstream has the local fixes
 

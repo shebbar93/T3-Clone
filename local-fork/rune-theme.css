@@ -1,0 +1,333 @@
+:root {
+  --rune-selected: color-mix(in srgb, var(--foreground) 6%, transparent);
+  --rune-weak-fill: color-mix(in srgb, var(--foreground) 8%, transparent);
+  --rune-weak-border: color-mix(in srgb, var(--foreground) 18%, transparent);
+  --rune-keycap: color-mix(in srgb, var(--foreground) 7%, transparent);
+  --rune-track: color-mix(in srgb, var(--foreground) 15%, var(--background));
+  --rune-knob: #f2f2f2;
+  --rune-knob-on: #eeeeee;
+  --rune-edge: color-mix(in srgb, var(--foreground) 7%, transparent);
+  --rune-rim: oklch(0 0 0 / 12%);
+  --rune-hairline: 0 0 0 0.5px var(--rune-rim);
+  --rune-input: 0 1px 1.5px oklch(0 0 0 / 10%), 0 0 0 0.5px oklch(0 0 0 / 14%);
+  --rune-elements: 0 0.5px 0.5px oklch(0 0 0 / 40%);
+  --rune-raised-drop: 0 2px 4px oklch(0 0 0 / 4%), 0 1px 2px -1px oklch(0 0 0 / 8%);
+  --rune-floating: 0 8px 16px oklch(0 0 0 / 4%), 0 4px 8px oklch(0 0 0 / 8%), var(--rune-hairline);
+  --rune-overlay: 0 16px 32px oklch(0 0 0 / 4%), 0 8px 16px oklch(0 0 0 / 8%), var(--rune-hairline);
+  --rune-switch-off:
+    inset 0 1px 1px oklch(0 0 0 / 8%), inset 0 0.5px 0.5px oklch(0 0 0 / 8%),
+    inset 0 0 0 0.5px oklch(0 0 0 / 10%);
+  --rune-switch-on:
+    inset 0 2px 2px oklch(0 0 0 / 10%), inset 0 1px 1px oklch(0 0 0 / 10%),
+    inset 0 0 0 0.5px oklch(0 0 0 / 20%);
+  --rune-chromatic-face: oklch(1 0 0) 0%, oklch(0.985 0 0) 60%, oklch(0.95 0 0) 100%;
+  --rune-chromatic-bands:
+    oklch(0.27 0 0) 0deg, oklch(0.63 0 0) 34deg, oklch(0.92 0 0) 46deg, oklch(0.74 0 0) 54deg,
+    oklch(0.45 0 0) 74deg, oklch(0.14 0 0) 96deg, oklch(0.27 0 0) 120deg;
+  --rune-chromatic-glints:
+    transparent 0deg, oklch(1 0 0 / 65%) 8deg, transparent 18deg, transparent 50deg,
+    oklch(0 0 0 / 40%) 62deg, transparent 74deg, transparent 90deg;
+  --rune-chromatic-sheen:
+    oklch(1 0 0 / 35%) 0%, transparent 30%, transparent 70%, oklch(0 0 0 / 35%) 100%;
+  --rune-chromatic-recess: oklch(0 0 0 / 28%);
+  --rune-chromatic-rim: oklch(0 0 0 / 18%);
+  --rune-chromatic-lift: oklch(0 0 0 / 3%);
+  --rune-chromatic-drop: oklch(0 0 0 / 35%);
+}
+
+.dark {
+  --rune-selected: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --rune-weak-fill: color-mix(in srgb, var(--foreground) 12%, transparent);
+  --rune-weak-border: color-mix(in srgb, var(--foreground) 22%, transparent);
+  --rune-keycap: color-mix(in srgb, var(--foreground) 16%, transparent);
+  --rune-track: color-mix(in srgb, var(--foreground) 30%, var(--background));
+  --rune-rim: oklch(1 0 0 / 16%);
+  --rune-input: var(--rune-hairline), 0 -0.5px 0 oklch(1 0 0 / 6%);
+  --rune-raised-drop: 0 2px 4px oklch(0 0 0 / 30%), 0 1px 2px oklch(0 0 0 / 30%);
+  --rune-floating:
+    0 8px 16px oklch(0 0 0 / 30%), 0 4px 8px oklch(0 0 0 / 30%), var(--rune-hairline),
+    0 -0.5px 0 oklch(1 0 0 / 6%);
+  --rune-overlay:
+    0 16px 32px oklch(0 0 0 / 30%), 0 8px 16px oklch(0 0 0 / 30%), var(--rune-hairline),
+    0 -0.5px 0 oklch(1 0 0 / 6%);
+  --rune-switch-off: inset 0 -0.5px 0 oklch(1 0 0 / 10%), inset 0 0 0 0.5px oklch(1 0 0 / 16%);
+  --rune-switch-on: var(--rune-switch-off);
+  --rune-chromatic-face: oklch(0.22 0 0) 0%, oklch(0.16 0 0) 60%, oklch(0.13 0 0) 100%;
+  --rune-chromatic-bands:
+    oklch(0.3 0 0) 0deg, oklch(0.7 0 0) 34deg, oklch(1 0 0) 46deg, oklch(0.82 0 0) 54deg,
+    oklch(0.5 0 0) 74deg, oklch(0.16 0 0) 96deg, oklch(0.3 0 0) 120deg;
+  --rune-chromatic-recess: oklch(0 0 0 / 90%);
+  --rune-chromatic-rim: oklch(0 0 0 / 70%);
+  --rune-chromatic-lift: oklch(1 0 0 / 6%);
+  --rune-chromatic-drop: oklch(0 0 0 / 60%);
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --rune-rim: oklch(0 0 0 / 30%);
+    --rune-edge: color-mix(in srgb, var(--foreground) 30%, transparent);
+  }
+  .dark {
+    --rune-rim: oklch(1 0 0 / 32%);
+  }
+}
+
+[data-slot="toggle"].bg-background,
+[data-slot="badge"]:is(.bg-secondary, .bg-background) {
+  border-color: transparent;
+  background-color: var(--rune-neutral-fill);
+  background-clip: border-box;
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--rune-button);
+}
+
+[data-slot="toggle"].bg-background:is(:hover, [data-pressed]):not(:disabled) {
+  background-color: var(--rune-neutral-fill);
+  background-image: linear-gradient(var(--rune-hover), var(--rune-hover));
+}
+
+[data-slot="toggle"].bg-background:active:not(:disabled) {
+  background-image: linear-gradient(var(--rune-pressed), var(--rune-pressed));
+}
+
+[role="switch"][data-slot="switch"] {
+  --thumb-size: 14px;
+  border-radius: 4px;
+  background-color: var(--rune-track);
+  background-image: linear-gradient(to bottom, transparent, var(--rune-sheen));
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
+    var(--rune-switch-off);
+
+  &[data-size="sm"] {
+    --thumb-size: 12px;
+  }
+
+  &[data-checked] {
+    background-color: var(--primary);
+    box-shadow:
+      var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
+      var(--rune-switch-on);
+  }
+
+  &:hover:not([data-disabled]) {
+    background-image:
+      linear-gradient(var(--rune-hover), var(--rune-hover)),
+      linear-gradient(to bottom, transparent, var(--rune-sheen));
+  }
+
+  &[data-checked]:hover:not([data-disabled]) {
+    background-image:
+      linear-gradient(var(--rune-contrast-hover), var(--rune-contrast-hover)),
+      linear-gradient(to bottom, transparent, var(--rune-sheen));
+  }
+}
+
+[role="switch"][data-slot="switch"] [data-slot="switch-thumb"] {
+  border-radius: 2px;
+  background-color: var(--rune-knob);
+  background-image: linear-gradient(to bottom, oklch(1 0 0 / 60%), transparent);
+  box-shadow:
+    inset 0 0 0 0.5px oklch(1 0 0 / 70%),
+    var(--rune-elements);
+
+  &[data-checked] {
+    background-color: var(--rune-knob-on);
+  }
+}
+
+[role="switch"][data-slot="switch"]:hover:not(:active, [data-disabled]) [data-slot="switch-thumb"] {
+  scale: 1.084 1;
+  border-radius: 3px;
+}
+
+[data-slot="checkbox"]:not([data-checked], [aria-invalid="true"]) {
+  border-color: var(--rune-weak-border);
+  background-color: transparent;
+  box-shadow: none;
+
+  &:hover:not([data-disabled]) {
+    background-color: var(--rune-hover);
+  }
+}
+
+[data-slot="checkbox-indicator"][data-checked] {
+  border: 1px solid var(--rune-weak-border);
+  background-color: var(--rune-weak-fill);
+  color: var(--foreground);
+}
+
+[data-slot="input-control"],
+[data-slot="select-trigger"].bg-background {
+  background-clip: border-box;
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--rune-input);
+}
+
+[data-slot="input-control"]:not(:has(:focus-visible, [aria-invalid="true"])),
+[data-slot="select-trigger"].bg-background:not(:focus-visible, [aria-invalid="true"]) {
+  border-color: transparent;
+}
+
+[data-slot="kbd"] {
+  border: 0;
+  border-radius: 2px;
+  background-color: var(--rune-keycap);
+  background-image: none;
+  box-shadow: none;
+}
+
+:is(
+  [data-slot="menu-popup"],
+  [data-slot="select-popup"],
+  [data-slot="popover-popup"],
+  [data-slot="tooltip-popup"],
+  [data-slot="preview-card-popup"],
+  [data-slot="combobox-popup"],
+  [data-slot="autocomplete-popup"],
+  [data-slot="toast-popup"]
+) {
+  border-color: transparent;
+  box-shadow: var(--rune-floating);
+}
+
+:is(
+  [data-slot="dialog-popup"],
+  [data-slot="alert-dialog-popup"],
+  [data-slot="command-dialog-popup"],
+  [data-slot="sheet-popup"]
+) {
+  border-color: transparent;
+  box-shadow: var(--rune-overlay);
+}
+
+.bg-sidebar-row-active,
+[role="treeitem"][aria-selected="true"],
+[data-slot="toggle"][data-pressed] {
+  background-color: var(--rune-selected);
+  background-origin: border-box;
+}
+
+.bg-sidebar-row-active:not(:focus-visible),
+[role="treeitem"][aria-selected="true"]:not(:focus-visible),
+[data-slot="toggle"][data-pressed]:not(:focus-visible) {
+  box-shadow: none;
+}
+
+[data-user-message-bubble].bg-message {
+  border: 1px solid var(--rune-edge);
+  box-shadow:
+    var(--rune-raised-drop),
+    inset 0 1px 0 oklch(1 0 0 / 4%);
+}
+
+[data-slot="composer-shell"] {
+  --chat-composer-outline: var(--rune-rim);
+}
+
+[data-composer-banner-surface]:is(
+  [data-variant="default"],
+  [data-variant="info"],
+  [data-variant="success"]
+) {
+  --chat-composer-attached-outline: var(--rune-rim);
+}
+
+[data-composer-banner-surface="detached"]::before {
+  box-shadow: var(--rune-floating);
+}
+
+[data-slot="composer-host"] {
+  box-shadow: var(--rune-raised-drop);
+}
+
+[data-slot="composer-shell"]:has([data-composer-banner-surface="attached"])
+  [data-slot="composer-host"] {
+  box-shadow: none;
+}
+
+button.isolate.overflow-hidden.rounded-full:enabled {
+  color: var(--foreground);
+  border: 2px solid transparent;
+  background-color: transparent;
+  background-image:
+    linear-gradient(to bottom, var(--rune-chromatic-face)),
+    linear-gradient(to bottom, var(--rune-chromatic-sheen));
+  background-clip: padding-box, border-box;
+  background-origin: border-box;
+  overflow: visible;
+  box-shadow:
+    inset 0 1px 3px var(--rune-chromatic-recess),
+    0 0 0 1px var(--rune-chromatic-rim),
+    0 1px 3px var(--rune-chromatic-drop);
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    mask: radial-gradient(closest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+    animation: rune-chromatic-spin 4.5s linear infinite paused;
+  }
+
+  &::before {
+    background-image: repeating-conic-gradient(var(--rune-chromatic-bands));
+  }
+
+  &::after {
+    background-image: repeating-conic-gradient(var(--rune-chromatic-glints));
+    animation-direction: reverse;
+  }
+
+  &:hover {
+    box-shadow:
+      inset 0 1px 3px var(--rune-chromatic-recess),
+      0 0 0 1px var(--rune-chromatic-rim),
+      0 1px 3px var(--rune-chromatic-drop),
+      inset 0 0 0 100vmax var(--rune-chromatic-lift);
+  }
+
+  &:hover::before,
+  &:hover::after {
+    animation-play-state: running;
+  }
+
+  &:active {
+    box-shadow:
+      inset 0 2px 5px var(--rune-chromatic-recess),
+      0 0 0 1px var(--rune-chromatic-rim);
+  }
+
+  & > span[aria-hidden="true"] {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::before,
+    &::after {
+      animation: none;
+    }
+  }
+}
+
+@keyframes rune-chromatic-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.composer-tiptap {
+  caret-shape: block;
+}
+
+html {
+  font-feature-settings: "cv05", "ss03";
+  --diffs-font-features: normal;
+}
+
+.font-mono {
+  font-feature-settings: normal;
+}

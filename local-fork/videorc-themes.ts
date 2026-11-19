@@ -18,6 +18,9 @@ const [mode = "plan", dirArg] = process.argv.slice(2);
 const themesDir = dirArg ?? NodePath.join(NodeOS.homedir(), ".t3", "userdata", "themes");
 const css = NodeFS.readFileSync(NodePath.join(here, "videorc-theme.css"), "utf8");
 const draftingCss = NodeFS.readFileSync(NodePath.join(here, "drafting.css"), "utf8");
+const draftingFlatCss = NodeFS.readFileSync(NodePath.join(here, "drafting-flat.css"), "utf8");
+const runeButtonsCss = NodeFS.readFileSync(NodePath.join(here, "rune-buttons.css"), "utf8");
+const runeCss = NodeFS.readFileSync(NodePath.join(here, "rune-theme.css"), "utf8");
 const decode = Schema.decodeUnknownExit(Schema.fromJsonString(EnvironmentThemeFile));
 const isId = Schema.is(EnvironmentThemeId);
 
@@ -81,25 +84,54 @@ for (const file of jsonFiles(NodePath.join(here, "themes", "custom"))) {
 }
 
 const environmentDir = NodePath.join(here, "themes", "environment");
-for (const file of jsonFiles(environmentDir)) {
-  const id = file.slice(0, -".json".length);
-  const { css: _css, ...theme } = readJson(NodePath.join(environmentDir, file));
+const addEnvironment = (
+  id: string,
+  theme: Record<string, unknown>,
+  baseCss: string,
+  source: string,
+) => {
   const sidecarPath = NodePath.join(environmentDir, `${id}.css`);
   const sidecar = NodeFS.existsSync(sidecarPath) ? NodeFS.readFileSync(sidecarPath, "utf8") : null;
   if (sidecar !== null && themeCssLoadsRemoteFiles(sidecar)) fail(`${id}.css loads remote files`);
-  const parts = [css, sidecar, id.endsWith("-drafting") ? draftingCss : null];
+  const parts = [
+    baseCss,
+    sidecar,
+    id.endsWith("-drafting") || id.endsWith("-rune") ? draftingCss : null,
+  ];
   const themeCss = parts.filter((part) => part !== null).join("\n");
   outputs.push({
     id,
     name: String(theme.name),
-    source: `environment ${file}`,
+    source,
     css: themeCss,
     text: `${JSON.stringify({ ...theme, css: themeCss }, null, 2)}\n`,
   });
+};
+
+for (const file of jsonFiles(environmentDir)) {
+  const id = file.slice(0, -".json".length);
+  const { css: _css, ...theme } = readJson(NodePath.join(environmentDir, file));
+  if (!id.endsWith("-drafting")) {
+    addEnvironment(id, theme, css, `environment ${file}`);
+    continue;
+  }
+  addEnvironment(id, theme, `${css}\n${draftingFlatCss}\n${runeButtonsCss}`, `environment ${file}`);
+  const { description: _description, ...rest } = theme;
+  const runeId = id.replace(/-drafting$/, "-rune");
+  const runeName = `${String(theme.name).replace(/ Drafting$/, "")} Rune`;
+  addEnvironment(
+    runeId,
+    { ...rest, id: runeId, name: runeName },
+    `${runeButtonsCss}\n${runeCss}`,
+    `rune copy of ${file}`,
+  );
 }
 
 if (themeCssLoadsRemoteFiles(css)) fail("videorc-theme.css loads remote files");
 if (themeCssLoadsRemoteFiles(draftingCss)) fail("drafting.css loads remote files");
+if (themeCssLoadsRemoteFiles(draftingFlatCss)) fail("drafting-flat.css loads remote files");
+if (themeCssLoadsRemoteFiles(runeButtonsCss)) fail("rune-buttons.css loads remote files");
+if (themeCssLoadsRemoteFiles(runeCss)) fail("rune-theme.css loads remote files");
 
 const ids = new Set<string>();
 for (const output of outputs) {

@@ -309,6 +309,15 @@ button.isolate.overflow-hidden.rounded-full:enabled {
   caret-shape: block;
 }
 
+html {
+  font-feature-settings: "cv05", "ss03";
+  --diffs-font-features: normal;
+}
+
+.font-mono {
+  font-feature-settings: normal;
+}
+
 .bg-sidebar-row-active,
 [role="treeitem"][aria-selected="true"],
 [data-slot="toggle"][data-pressed] {

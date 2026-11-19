@@ -246,7 +246,14 @@ cmd_selectors() {
   selector_check "active sidebar row" 'bg-sidebar-row-active' || failed=1
   selector_check "tree item" 'role="treeitem"' || failed=1
   selector_check "toggle" 'data-slot="toggle"' || failed=1
-  [ "$failed" = 0 ] || die "Videorc selectors are missing. Update local-fork/videorc-theme.css, then run: $0 themes --apply"
+  selector_check "composer font features reset" 'composer-tiptap.ProseMirror' || failed=1
+  selector_check "Rune switch size" '--thumb-size' || failed=1
+  selector_check "Rune checkbox" 'data-slot="checkbox"' || failed=1
+  selector_check "Rune input" 'data-slot="input-control"' || failed=1
+  selector_check "Rune select trigger" 'data-slot="select-trigger"' || failed=1
+  selector_check "Rune message bubble" 'data-user-message-bubble' || failed=1
+  selector_check "Rune bubble surface" 'bg-message' || failed=1
+  [ "$failed" = 0 ] || die "Selectors are missing. Update local-fork/videorc-theme.css or local-fork/rune-theme.css, then run: $0 themes --apply"
 }
 
 cmd_themes() {
