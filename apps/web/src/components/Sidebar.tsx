@@ -2946,6 +2946,14 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
         );
         return;
       }
+      if (command === "thread.firstWorking") {
+        const target = workingThreads[0];
+        if (!target) return;
+        event.preventDefault();
+        event.stopPropagation();
+        navigateToThread(scopeThreadRef(target.environmentId, target.id));
+        return;
+      }
       const jumpIndex = threadJumpIndexFromCommand(command ?? "");
       if (jumpIndex === null) return;
       navigateToThreadKey(orderedThreadKeys[jumpIndex] ?? null);
@@ -2959,6 +2967,7 @@ export default function Sidebar({ routeReveal }: { routeReveal: SidebarRouteReve
     routeRowThreadKey,
     routeThreadRef,
     threadByKey,
+    workingThreads,
   ]);
 
   const showJumpHints = useThreadJumpHintsVisible(keybindings, routeThreadRef);

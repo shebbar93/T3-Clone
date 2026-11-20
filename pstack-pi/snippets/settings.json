@@ -1,0 +1,14 @@
+{
+  "modelThinkingLevels": {
+    "aperture/claude-opus-5-5": "medium",
+    "aperture/claude-sonnet-5-5": "xhigh",
+    "aperture/claude-haiku-5-5": "max",
+    "azure/gpt-6.1-sol": "medium",
+    "github-copilot/claude-opus-5.5": "medium",
+    "github-copilot/claude-sonnet-5.5": "xhigh",
+    "github-copilot/claude-haiku-5.5": "max",
+    "github-copilot/gpt-6.1-sol": "medium",
+    "github-copilot/gpt-6-luna": "max"
+  },
+  "skills": ["-skills/pstack/setup-pstack"]
+}

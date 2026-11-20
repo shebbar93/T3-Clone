@@ -705,6 +705,25 @@ describe("rightPanelStore", () => {
     });
   });
 
+  it("hides thread details by default and keeps a user toggle across reloads", async () => {
+    const visibility = (ref: typeof refA) =>
+      selectThreadPanelVisibility(
+        useRightPanelStore.getState().threadPanelVisibilityByThreadKey,
+        ref,
+      );
+    expect(visibility(refA)).toEqual({ inlineOpen: false, popoverOpen: false });
+
+    useRightPanelStore.getState().toggleThreadPanel(refA, "inline");
+    await reloadRightPanelStore();
+    expect(visibility(refA)).toEqual({ inlineOpen: true, popoverOpen: false });
+    expect(visibility(refB)).toEqual({ inlineOpen: false, popoverOpen: false });
+
+    useRightPanelStore.getState().toggleThreadPanel(refA, "inline");
+    expect(useRightPanelStore.getState().threadPanelVisibilityByThreadKey).toEqual({});
+    await reloadRightPanelStore();
+    expect(visibility(refA)).toEqual({ inlineOpen: false, popoverOpen: false });
+  });
+
   it("closes the popover atomically when the real right panel opens", () => {
     useRightPanelStore.getState().setThreadPanelOpen(refA, "popover", true);
     useRightPanelStore.getState().open(refA, "diff");
@@ -714,7 +733,7 @@ describe("rightPanelStore", () => {
         useRightPanelStore.getState().threadPanelVisibilityByThreadKey,
         refA,
       ),
-    ).toEqual({ inlineOpen: true, popoverOpen: false });
+    ).toEqual({ inlineOpen: false, popoverOpen: false });
   });
 
   it("keeps an open popover visible by promoting it to inline when the real panel closes", () => {

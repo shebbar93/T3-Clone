@@ -1,0 +1,79 @@
+:root {
+  --rune-hover: oklch(0 0 0 / 4%);
+  --rune-pressed: oklch(0 0 0 / 8%);
+  --rune-contrast-hover: oklch(1 0 0 / 12%);
+  --rune-contrast-pressed: oklch(1 0 0 / 24%);
+  --rune-sheen: oklch(1 0 0 / 20%);
+  --rune-neutral-fill: var(--background);
+  --rune-button: 0 1px 1.5px oklch(0 0 0 / 10%), 0 0 0 0.5px oklch(0 0 0 / 14%);
+  --rune-button-contrast:
+    0 1px 1.5px oklch(0 0 0 / 20%), 0 0 0 0.5px oklch(0 0 0 / 30%),
+    inset 0 1px 2px oklch(1 0 0 / 14%), inset 0 -1px 2px oklch(0 0 0 / 6%);
+}
+
+.dark {
+  --rune-hover: oklch(1 0 0 / 6%);
+  --rune-pressed: oklch(1 0 0 / 10%);
+  --rune-contrast-hover: oklch(0 0 0 / 24%);
+  --rune-contrast-pressed: oklch(0 0 0 / 40%);
+  --rune-sheen: oklch(1 0 0 / 10%);
+  --rune-neutral-fill: oklch(1 0 0 / 6%);
+  --rune-button:
+    0 1px 2px oklch(0 0 0 / 40%), 0 0 0 0.5px oklch(1 0 0 / 20%), 0 -0.5px 0 oklch(1 0 0 / 10%);
+  --rune-button-contrast:
+    0 1px 2px oklch(0 0 0 / 40%), 0 0 0 0.5px oklch(1 0 0 / 40%), 0 -0.5px 0 oklch(1 0 0 / 30%);
+}
+
+[data-slot="button"].bg-primary {
+  --rune-tone: var(--primary);
+}
+
+[data-slot="button"].bg-destructive {
+  --rune-tone: var(--destructive);
+}
+
+[data-slot="button"]:is(.bg-primary, .bg-destructive),
+[data-slot="button"]:is(.bg-primary, .bg-destructive):disabled {
+  border-color: transparent;
+  background-color: var(--rune-tone);
+  background-image: linear-gradient(to bottom, var(--rune-sheen), transparent);
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
+    var(--rune-button-contrast);
+}
+
+[data-slot="button"]:is(.bg-primary, .bg-destructive):is(:hover, [data-pressed]):not(:disabled) {
+  background-image:
+    linear-gradient(var(--rune-contrast-hover), var(--rune-contrast-hover)),
+    linear-gradient(to bottom, var(--rune-sheen), transparent);
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
+    var(--rune-button-contrast);
+}
+
+[data-slot="button"]:is(.bg-primary, .bg-destructive):active:not(:disabled) {
+  background-image:
+    linear-gradient(var(--rune-contrast-pressed), var(--rune-contrast-pressed)),
+    linear-gradient(to bottom, var(--rune-sheen), transparent);
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
+    var(--rune-button-contrast);
+}
+
+[data-slot="button"]:is(.bg-popover, .bg-secondary) {
+  border-color: transparent;
+  background-color: var(--rune-neutral-fill);
+  background-image: none;
+  background-clip: border-box;
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--rune-button);
+}
+
+[data-slot="button"]:is(.bg-popover, .bg-secondary):is(:hover, [data-pressed]):not(:disabled) {
+  background-color: var(--rune-neutral-fill);
+  background-image: linear-gradient(var(--rune-hover), var(--rune-hover));
+}
+
+[data-slot="button"]:is(.bg-popover, .bg-secondary):active:not(:disabled) {
+  background-image: linear-gradient(var(--rune-pressed), var(--rune-pressed));
+}
