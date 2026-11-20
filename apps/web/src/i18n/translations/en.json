@@ -8504,6 +8504,7 @@
   "d9d54dde0ba27d96": "Composer: Start in Background",
   "ad9c298de0bfbc1b": "Composer: Send and Start New Thread",
   "5e97cb4f703ff372": "Composer: Start or Finish Dictation",
+  "3e086ad87cf6e9c6": "Composer: Focus Message Input",
   "e49ba42e8e8596d2": "Queue: Send First Queued Message",
   "7f67d035b1db66f5": "Queue: Edit Last Queued Message",
   "4c7c2842b696ccd8": "Pull Request: Copy Link or Thread",
