@@ -136,7 +136,7 @@ A theme id that ends with `-drafting` (Stillwater Drafting, Carbonfox Drafting) 
 | Banner corners                                   | `[data-composer-banner-surface]::before`, `composer-banner-attachment` slot                                                      |
 | Corner ticks                                     | `[data-user-message-bubble]`, `[data-thread-item] [data-sidebar-row][aria-current="page"]`                                       |
 
-The Quicksilver edge runs only in dark mode. Quicksilver has no light version.
+The Quicksilver edge runs in dark and light mode. Quicksilver has no light version, so light mode uses the same metal colors. Only the shadows change: `--qs-ring` and `--qs-drop` on `:root` and `.dark`. In light mode, an idle composer keeps its usual outline, because the edge rules apply only while the agent works.
 
 Stillwater Drafting has no stars and no glow at the top of the sidebar. `stillwater-drafting.css` has no `--ob-stars` or `--ob-twinkle` layer and no `[data-slot="sidebar-inner"]::before` or `::after` rule. The twinkle animation sat inside the sidebar `backdrop-filter`, so Chromium blurred the sidebar again on each frame. In a headless Chromium test, it used about 30% of the GPU process when the app was idle. Remove the star and glow layers again when you paste a new upstream Stillwater CSS. While the agent works, the wave costs about 13% of the renderer. A lower `--qs-pace` step count decreases only GPU work, because Chromium calculates the style again on each frame.
 
