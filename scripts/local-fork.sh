@@ -125,7 +125,8 @@ cmd_check() {
     cd apps/web
     vp run typecheck
     vp test run src/lib/workspaceFocus.browser.test.ts src/components/ChatView.logic.browser.test.ts \
-      src/components/ChatView.composerFocus.browser.test.tsx
+      src/components/ChatView.composerFocus.browser.test.tsx src/components/Sidebar.logic.test.ts \
+      src/components/settings/KeybindingsSettings.logic.test.ts src/rightPanelStore.test.ts
   )
   ok "check"
 }
