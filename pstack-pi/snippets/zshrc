@@ -1,0 +1,13 @@
+alias piluna='pi --provider github-copilot --model gpt-6-luna --thinking max'
+export PI_APERTURE_OPUS="claude-opus-5-5"
+export PI_APERTURE_HAIKU="claude-haiku-5-5"
+export PI_APERTURE_SONNET="${PI_APERTURE_OPUS/opus/sonnet}"
+alias piopus55aperture='pi --provider aperture --model "$PI_APERTURE_OPUS" --thinking medium'
+alias pihaiku55aperture='pi --provider aperture --model "$PI_APERTURE_HAIKU" --thinking max'
+alias pisonnet55aperture='pi --provider aperture --model "$PI_APERTURE_SONNET" --thinking xhigh'
+export PI_APERTURE_OPENAI_URL="<aperture-openai-url>"
+alias pisol61aperture='AZURE_OPENAI_BASE_URL="$PI_APERTURE_OPENAI_URL" AZURE_OPENAI_API_KEY=aperture pi --provider azure --model gpt-6.1-sol --thinking medium'
+alias pisol61copilot='pi --provider github-copilot --model gpt-6.1-sol --thinking medium'
+alias piopus55copilot='pi --provider github-copilot --model claude-opus-5.5 --thinking medium'
+alias pihaiku55copilot='pi --provider github-copilot --model claude-haiku-5.5 --thinking max'
+alias pisonnet55copilot='pi --provider github-copilot --model claude-sonnet-5.5 --thinking xhigh'

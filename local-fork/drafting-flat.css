@@ -1,0 +1,22 @@
+:root {
+  --vrc-chip-top: oklch(1 0 0 / 75%);
+  --vrc-chip-bottom: oklch(1 0 0 / 75%);
+  --vrc-keycap-top: oklch(1 0 0 / 85%);
+  --vrc-keycap-bottom: oklch(1 0 0 / 85%);
+}
+
+.dark {
+  --vrc-chip-top: oklch(1 0 0 / 6%);
+  --vrc-chip-bottom: oklch(1 0 0 / 6%);
+  --vrc-keycap-top: oklch(1 0 0 / 8%);
+  --vrc-keycap-bottom: oklch(1 0 0 / 8%);
+  --vrc-plate-top: oklch(1 0 0 / 8%);
+  --vrc-plate-bottom: oklch(1 0 0 / 8%);
+}
+
+[data-slot="switch"][data-checked],
+[data-slot="checkbox-indicator"][data-checked] {
+  --vrc-chrome-stops:
+    var(--vrc-tone) 0%, var(--vrc-tone) 40%, color-mix(in oklch, var(--vrc-tone), black 30%) 54%,
+    color-mix(in oklch, var(--vrc-tone), black 10%) 82%, var(--vrc-tone) 100%;
+}

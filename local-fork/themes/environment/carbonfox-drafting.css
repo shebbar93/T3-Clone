@@ -1,0 +1,32 @@
+.dark {
+  --ob-glass: color-mix(in srgb, #333333 42%, transparent);
+  --ob-edge: color-mix(in srgb, #fefefe 7%, transparent);
+  --ob-shine: color-mix(in srgb, #fefefe 6%, transparent);
+  --ob-shadow: inset 0 1px 0 var(--ob-shine), 0 10px 30px rgb(0 0 0 / 0.25);
+  --ob-focus: color-mix(in srgb, #33b1ff 40%, transparent);
+}
+:root:not(.dark) {
+  --ob-glass: rgb(228 228 228 / 0.6);
+  --ob-edge: rgb(7 7 7 / 0.12);
+  --ob-shine: rgb(255 255 255 / 0.55);
+  --ob-shadow: inset 0 1px 0 var(--ob-shine), 0 10px 30px rgb(7 7 7 / 0.08);
+  --ob-focus: color-mix(in srgb, #0072c3 40%, transparent);
+}
+[data-slot="composer-host"],
+[data-thread-details-card],
+[data-user-message-bubble] {
+  background: var(--ob-glass) !important;
+  border: 1px solid var(--ob-edge) !important;
+  border-radius: var(--ob-card-radius) !important;
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: var(--ob-shadow) !important;
+}
+[data-slot="composer-host"]:focus-within {
+  border-color: var(--ob-focus) !important;
+}
+[data-slot="composer-host"]:has([data-pending-user-input-toggle]) {
+  background: transparent !important;
+  border-color: transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
